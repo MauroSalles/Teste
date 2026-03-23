@@ -105,6 +105,20 @@ button:hover {
   color: #0d0d0d;
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: transparent;
+  color: #00ff41;
+}
+
+#cmd:disabled {
+  opacity: 0.45;
+}
+
 @media (max-width: 600px) {
   #output-container {
     height: 300px;

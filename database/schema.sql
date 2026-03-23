@@ -13,6 +13,12 @@ CREATE TABLE IF NOT EXISTS pedidos (
     data       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS estoque (
+    id        SERIAL PRIMARY KEY,
+    sabor_id  INTEGER NOT NULL UNIQUE REFERENCES sabores(id) ON DELETE CASCADE,
+    quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0)
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
@@ -21,3 +27,4 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Pistache', 12.00),
     ('Limão', 9.00)
 ON CONFLICT DO NOTHING;
+

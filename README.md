@@ -17,7 +17,8 @@ gelateria-system/
 │   │   └── health_routes.py← Rota /health
 │   ├── models/
 │   │   ├── sabor.py        ← Operações na tabela sabores
-│   │   └── pedido.py       ← Operações na tabela pedidos
+│   │   ├── pedido.py       ← Operações na tabela pedidos
+│   │   └── estoque.py      ← Operações na tabela estoque
 │   └── services/
 │       └── cmd_service.py  ← Lógica dos comandos
 ├── frontend/
@@ -99,14 +100,36 @@ docker-compose up --build
 
 ## 💻 Comandos do Sistema
 
-| Comando                          | Descrição                      |
-|----------------------------------|--------------------------------|
-| `ajuda`                          | Lista todos os comandos        |
-| `listar sabores`                 | Mostra sabores cadastrados     |
-| `add sabor <nome> <preco>`       | Adiciona um novo sabor         |
-| `remover sabor <id>`             | Remove um sabor pelo ID        |
-| `fazer pedido <sabor> <qtd>`     | Registra um pedido             |
-| `listar pedidos`                 | Mostra histórico de pedidos    |
+### Sabores
+| Comando                              | Descrição                        |
+|--------------------------------------|----------------------------------|
+| `listar sabores`                     | Mostra sabores cadastrados       |
+| `add sabor <nome> <preco>`           | Adiciona um novo sabor           |
+| `atualizar sabor <id> <preco>`       | Atualiza o preço de um sabor     |
+| `remover sabor <id>`                 | Remove um sabor pelo ID          |
+
+### Pedidos
+| Comando                              | Descrição                        |
+|--------------------------------------|----------------------------------|
+| `fazer pedido <sabor> <qtd>`         | Registra um pedido               |
+| `listar pedidos`                     | Mostra histórico de pedidos      |
+
+### Estoque
+| Comando                              | Descrição                        |
+|--------------------------------------|----------------------------------|
+| `ver estoque`                        | Exibe estoque atual              |
+| `set estoque <sabor> <qtd>`          | Define a quantidade em estoque   |
+| `add estoque <sabor> <qtd>`          | Aumenta o estoque de um sabor    |
+| `reduzir estoque <sabor> <qtd>`      | Reduz o estoque de um sabor      |
+
+### Sistema
+| Comando                              | Descrição                        |
+|--------------------------------------|----------------------------------|
+| `status`                             | Resumo geral do sistema          |
+| `limpar`                             | Limpa a tela do terminal         |
+| `ajuda`                              | Exibe todos os comandos          |
+
+> **Dica:** Use ↑/↓ para navegar pelo histórico de comandos.
 
 ### Exemplos
 
@@ -118,8 +141,17 @@ docker-compose up --build
 ❯ add sabor Pistache 12.00
   Sabor 'Pistache' adicionado com sucesso!
 
+❯ set estoque Chocolate 50
+  Estoque de 'Chocolate' definido para 50 unidades.
+
 ❯ fazer pedido Chocolate 3
   Pedido registrado: 3x Chocolate — R$ 30.00
+
+❯ status
+  ═══ Status do Sistema ═══
+    Sabores cadastrados : 5
+    Pedidos registrados : 1
+    Sabores sem estoque : 4
 ```
 
 ---

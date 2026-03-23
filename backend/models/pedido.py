@@ -1,11 +1,9 @@
-from backend.database import get_connection
+from backend.database import get_db
 
 
 def listar_pedidos():
-    conn = get_connection()
-    try:
-        cursor = conn.cursor()
-        try:
+    with get_db() as conn:
+        with conn.cursor() as cursor:
             cursor.execute(
                 """
                 SELECT p.id, s.nome AS sabor, p.quantidade, p.data
@@ -15,25 +13,14 @@ def listar_pedidos():
                 """
             )
             return cursor.fetchall()
-        finally:
-            cursor.close()
-    finally:
-        conn.close()
 
 
 def criar_pedido(sabor_id, quantidade):
-    conn = get_connection()
-    try:
-        cursor = conn.cursor()
-        try:
+    with get_db() as conn:
+        with conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO pedidos (sabor_id, quantidade) VALUES (%s, %s) RETURNING *",
                 (sabor_id, quantidade),
             )
-            pedido = cursor.fetchone()
-            conn.commit()
-            return pedido
-        finally:
-            cursor.close()
-    finally:
-        conn.close()
+            return cursor.fetchone()
+
