@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Sistema</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="title">Gelateria Sistema — CMD v2.0</span>
+    </div>
+
+    <div class="terminal-body" id="output" aria-live="polite">
+      <p class="line system">🍦 Bem-vindo ao Sistema de Gelateria!</p>
+      <p class="line system">Digite <span class="cmd-highlight">ajuda</span> para ver os comandos disponíveis.</p>
+    </div>
+
+    <div class="terminal-input-row">
+      <span class="prompt">gelateria&gt;&nbsp;</span>
+      <input
+        type="text"
+        id="cmd"
+        class="cmd-input"
+        placeholder="Digite um comando..."
+        autocomplete="off"
+        spellcheck="false"
+        autofocus
+      />
+      <span id="loader" class="loader" hidden aria-label="Carregando..."></span>
+      <button id="send-btn" onclick="enviarComando()">Enviar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
