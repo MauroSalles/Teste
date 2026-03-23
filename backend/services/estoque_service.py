@@ -1,10 +1,11 @@
+from typing import Any
+
 from database import get_connection
 
 
-def listar_estoque():
+def listar_estoque() -> list[dict[str, Any]]:
     """Return stock levels for all flavors."""
-    conn = get_connection()
-    try:
+    with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -15,15 +16,24 @@ def listar_estoque():
                 """
             )
             rows = cur.fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
+    return [dict(r) for r in rows]
 
 
-def atualizar_estoque(sabor_nome, quantidade):
-    """Set the stock quantity for a flavor by name."""
-    conn = get_connection()
-    try:
+def atualizar_estoque(
+    sabor_nome: str, quantidade: int
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Set the stock quantity for a flavor by name.
+
+    Returns ``(result_dict, None)`` on success or ``(None, error_message)``
+    on failure.
+
+    Raises:
+        ValueError: if *quantidade* is negative.
+    """
+    if quantidade < 0:
+        raise ValueError("A quantidade não pode ser negativa.")
+
+    with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT id FROM sabores WHERE LOWER(nome) = LOWER(%s)",
@@ -34,11 +44,10 @@ def atualizar_estoque(sabor_nome, quantidade):
                 return None, "Sabor não encontrado"
 
             cur.execute(
-                "UPDATE estoque SET quantidade = %s, atualizado_em = NOW() WHERE sabor_id = %s RETURNING quantidade",
+                "UPDATE estoque SET quantidade = %s, atualizado_em = NOW() "
+                "WHERE sabor_id = %s RETURNING quantidade",
                 (int(quantidade), sabor["id"]),
             )
             updated = cur.fetchone()
         conn.commit()
-        return {"quantidade": updated["quantidade"]}, None
-    finally:
-        conn.close()
+    return {"quantidade": updated["quantidade"]}, None

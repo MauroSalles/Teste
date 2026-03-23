@@ -7,11 +7,15 @@ Sistema profissional de gerenciamento de gelateria com interface tipo **CMD Web*
 | Comando | Descrição |
 |---|---|
 | `ajuda` | Exibe todos os comandos disponíveis |
+| `limpar` / `cls` | Limpa a tela do terminal |
 | `listar sabores` | Lista sabores cadastrados com ID e preço |
+| `buscar sabor <termo>` | Busca sabores pelo nome (parcial) |
 | `add sabor <nome> <preço>` | Adiciona um novo sabor |
 | `remover sabor <id>` | Remove sabor pelo ID |
 | `listar pedidos` | Lista todos os pedidos |
 | `fazer pedido <cliente> <sabor> <qtd>` | Cria um novo pedido |
+| `cancelar pedido <id>` | Cancela pedido e restaura estoque |
+| `listar clientes` | Lista clientes com total de pedidos |
 | `listar estoque` | Mostra estoque atual |
 | `atualizar estoque <sabor> <qtd>` | Atualiza quantidade no estoque |
 
@@ -23,7 +27,7 @@ Sistema profissional de gerenciamento de gelateria com interface tipo **CMD Web*
 gelateria-system/
 ├── backend/
 │   ├── app.py              # Entry-point Flask
-│   ├── database.py         # Conexão PostgreSQL
+│   ├── database.py         # Connection pool (psycopg2 ThreadedConnectionPool)
 │   ├── requirements.txt
 │   ├── routes/
 │   │   ├── __init__.py
@@ -34,13 +38,14 @@ gelateria-system/
 │       ├── __init__.py
 │       ├── sabores_service.py
 │       ├── pedidos_service.py
-│       └── estoque_service.py
+│       ├── estoque_service.py
+│       └── clientes_service.py
 ├── frontend/
 │   ├── index.html          # Interface CMD Web
-│   ├── style.css           # Terminal dark theme
-│   └── script.js           # Fetch API + histórico
+│   ├── style.css           # Terminal dark theme + spinner
+│   └── script.js           # Fetch API + histórico + limpar
 ├── database/
-│   └── schema.sql          # Tabelas PostgreSQL
+│   └── schema.sql          # Tabelas PostgreSQL (constraints + índices)
 └── README.md
 ```
 

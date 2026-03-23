@@ -3,7 +3,7 @@
 These dataclasses represent the application's domain objects used to
 transfer data between layers without coupling to the database schema.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 

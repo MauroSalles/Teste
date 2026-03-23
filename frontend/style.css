@@ -148,3 +148,31 @@ body {
   .terminal { min-height: 90vh; }
   .title    { display: none; }
 }
+
+/* ── Blinking cursor on the last input character ─────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Loading spinner ─────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #00ff41;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Dim input row while loading */
+.terminal-input-row:has(.loader:not([hidden])) .prompt,
+.terminal-input-row:has(.loader:not([hidden])) .cmd-input {
+  opacity: 0.5;
+}
