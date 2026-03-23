@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Sistema</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="terminal">
+    <div id="header">
+      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
+      <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
+    </div>
+
+    <div id="output-container">
+      <pre id="output">Bem-vindo ao Sistema de Gelateria!
+Digite 'ajuda' para ver os comandos disponíveis.
+</pre>
+    </div>
+
+    <div id="input-area">
+      <span class="prompt-symbol">❯</span>
+      <input
+        type="text"
+        id="cmd"
+        autocomplete="off"
+        placeholder="Digite um comando..."
+        autofocus
+      />
+      <button id="send-btn" onclick="enviarComando()">Enviar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
