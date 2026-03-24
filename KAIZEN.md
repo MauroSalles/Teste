@@ -135,7 +135,7 @@ make docker-down  # para tudo
 
 | Métrica | Antes | Depois |
 |---|---|---|
-| Testes automatizados | 0 | 28+ testes (unit + integração) |
+| Testes automatizados | 0 | 37 testes (unit + integração) |
 | Health check | básico | DB connectivity check + HTTP 503 |
 | Logging | nenhum | structured JSON (prod) / texto (dev) |
 | Deploy seguro | falha sem secrets | condicional — não executa sem config |

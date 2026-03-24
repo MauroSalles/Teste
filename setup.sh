@@ -2,7 +2,7 @@
 # setup.sh — Configura o ambiente de desenvolvimento local automaticamente.
 # Uso: ./setup.sh
 
-set -e
+set -euo pipefail
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

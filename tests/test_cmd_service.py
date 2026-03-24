@@ -37,7 +37,7 @@ def test_add_sabor_success():
 
 def test_add_sabor_invalid_price():
     resp = processar_comando("add sabor Morango abc")
-    assert "inválido" in resp.lower() or "inválido" in resp
+    assert "inválido" in resp.lower()
 
 
 def test_add_sabor_negative_price():

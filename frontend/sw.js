@@ -5,7 +5,7 @@
  */
 
 const CACHE_NAME = "gelateria-v1";
-const STATIC_ASSETS = ["/", "/index.html", "/style.css", "/script.js", "/manifest.json"];
+const STATIC_ASSETS = ["/index.html", "/style.css", "/script.js", "/manifest.json"];
 
 // ── Install: pre-cache static assets ────────────────────────────────────────
 self.addEventListener("install", (event) => {

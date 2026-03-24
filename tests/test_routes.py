@@ -37,7 +37,7 @@ def test_cmd_missing_campo_comando(client):
     )
     assert resp.status_code == 400
     data = resp.get_json()
-    assert "inválida" in data["resposta"].lower() or "inválid" in data["resposta"].lower()
+    assert "inválid" in data["resposta"].lower()
 
 
 def test_cmd_campo_nao_string(client):
