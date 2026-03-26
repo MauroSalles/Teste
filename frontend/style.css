@@ -1,50 +1,240 @@
+/* ── Reset ───────────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* ── Energy theme variables ──────────────────────────────────────────────── */
+/*
+  Themes are applied by adding a data-energy attribute to <body>:
+    very_high | high | medium | low | very_low
+*/
+
+:root {
+  --accent:       #00ff41;
+  --accent-dim:   #00aa2a;
+  --bg:           #0d0d0d;
+  --bg-terminal:  #111;
+  --bg-header:    #1a1a1a;
+  --text:         #00ff41;
+  --text-dim:     #888;
+  --border:       #00ff41;
+  --shadow:       rgba(0, 255, 65, 0.25);
+  --anim-speed:   0.2s;
+  --font-size:    0.95em;
+}
+
+/* Very High energy (90–100) — neon, dynamic */
+[data-energy="very_high"] {
+  --accent:      #ff4500;
+  --accent-dim:  #cc3800;
+  --bg:          #0a0000;
+  --bg-terminal: #110000;
+  --bg-header:   #200000;
+  --text:        #ff6a00;
+  --text-dim:    #994400;
+  --border:      #ff4500;
+  --shadow:      rgba(255, 69, 0, 0.4);
+  --anim-speed:  0.08s;
+  --font-size:   1.05em;
+}
+
+/* High energy (70–89) — vibrant blue-green */
+[data-energy="high"] {
+  --accent:      #00cfff;
+  --accent-dim:  #007acc;
+  --bg:          #000d12;
+  --bg-terminal: #001520;
+  --bg-header:   #002030;
+  --text:        #00cfff;
+  --text-dim:    #006688;
+  --border:      #00cfff;
+  --shadow:      rgba(0, 207, 255, 0.3);
+  --anim-speed:  0.15s;
+  --font-size:   1.0em;
+}
+
+/* Medium energy (50–69) — natural greens (default-ish) */
+[data-energy="medium"] {
+  --accent:      #00ff41;
+  --accent-dim:  #00aa2a;
+  --bg:          #0d0d0d;
+  --bg-terminal: #111;
+  --bg-header:   #1a1a1a;
+  --text:        #00ff41;
+  --text-dim:    #888;
+  --border:      #00ff41;
+  --shadow:      rgba(0, 255, 65, 0.25);
+  --anim-speed:  0.2s;
+  --font-size:   0.95em;
+}
+
+/* Low energy (30–49) — zen, muted earth tones */
+[data-energy="low"] {
+  --accent:      #7ec8a0;
+  --accent-dim:  #4a8c65;
+  --bg:          #080f0b;
+  --bg-terminal: #0e1710;
+  --bg-header:   #152018;
+  --text:        #7ec8a0;
+  --text-dim:    #3d6e50;
+  --border:      #7ec8a0;
+  --shadow:      rgba(126, 200, 160, 0.2);
+  --anim-speed:  0.35s;
+  --font-size:   0.92em;
+}
+
+/* Very Low energy (0–29) — energising yellow */
+[data-energy="very_low"] {
+  --accent:      #ffe600;
+  --accent-dim:  #ccb800;
+  --bg:          #0d0c00;
+  --bg-terminal: #181600;
+  --bg-header:   #242000;
+  --text:        #ffe600;
+  --text-dim:    #887a00;
+  --border:      #ffe600;
+  --shadow:      rgba(255, 230, 0, 0.3);
+  --anim-speed:  0.1s;
+  --font-size:   1.0em;
+}
+
+/* ── Base styles ─────────────────────────────────────────────────────────── */
 body {
-  background: #0d0d0d;
-  color: #00ff41;
+  background: var(--bg);
+  color: var(--text);
   font-family: "Courier New", Courier, monospace;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
   padding: 20px;
+  transition: background var(--anim-speed), color var(--anim-speed);
 }
 
+/* ── Terminal ────────────────────────────────────────────────────────────── */
 #terminal {
   width: 100%;
-  max-width: 860px;
-  background: #111;
-  border: 1px solid #00ff41;
+  max-width: 900px;
+  background: var(--bg-terminal);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.25);
+  box-shadow: 0 0 20px var(--shadow);
   overflow: hidden;
+  transition: border-color var(--anim-speed), box-shadow var(--anim-speed);
 }
 
+/* ── Header ──────────────────────────────────────────────────────────────── */
 #header {
-  background: #1a1a1a;
-  border-bottom: 1px solid #00ff41;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
   padding: 10px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  transition: background var(--anim-speed);
+}
+
+#header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .prompt {
   font-weight: bold;
   font-size: 1.1em;
-  color: #00ff41;
+  color: var(--text);
 }
 
 .subtitle {
   font-size: 0.8em;
-  color: #888;
+  color: var(--text-dim);
 }
 
+/* ── Energy status bar ───────────────────────────────────────────────────── */
+#energy-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82em;
+  color: var(--text-dim);
+}
+
+#energy-mood-display {
+  font-size: 1.3em;
+  line-height: 1;
+}
+
+#energy-mini-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#energy-mini-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 50%;
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+#energy-score-display {
+  min-width: 24px;
+  color: var(--text);
+  font-weight: bold;
+}
+
+#recheckin-btn {
+  background: transparent;
+  border: 1px solid var(--accent-dim);
+  color: var(--text-dim);
+  font-size: 0.9em;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background var(--anim-speed), color var(--anim-speed);
+}
+#recheckin-btn:hover {
+  background: var(--accent-dim);
+  color: var(--bg);
+}
+
+/* ── Shortcuts bar ───────────────────────────────────────────────────────── */
+#shortcuts-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--accent-dim);
+  background: var(--bg-header);
+}
+
+.shortcut-btn {
+  background: transparent;
+  border: 1px solid var(--accent-dim);
+  color: var(--text-dim);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.78em;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--anim-speed), color var(--anim-speed), border-color var(--anim-speed);
+  white-space: nowrap;
+}
+.shortcut-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+/* ── Output ──────────────────────────────────────────────────────────────── */
 #output-container {
   height: 420px;
   overflow-y: auto;
@@ -54,21 +244,24 @@ body {
 #output {
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 0.95em;
+  font-size: var(--font-size);
   line-height: 1.5;
+  color: var(--text);
+  transition: font-size var(--anim-speed);
 }
 
+/* ── Input area ──────────────────────────────────────────────────────────── */
 #input-area {
-  border-top: 1px solid #00ff41;
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   padding: 10px 16px;
   gap: 8px;
-  background: #111;
+  background: var(--bg-terminal);
 }
 
 .prompt-symbol {
-  color: #00ff41;
+  color: var(--accent);
   font-size: 1.1em;
   flex-shrink: 0;
 }
@@ -77,50 +270,186 @@ body {
   flex: 1;
   background: transparent;
   border: none;
-  color: #00ff41;
+  color: var(--text);
   font-family: "Courier New", Courier, monospace;
-  font-size: 0.95em;
+  font-size: var(--font-size);
   outline: none;
-  caret-color: #00ff41;
+  caret-color: var(--accent);
 }
 
 #cmd::placeholder {
-  color: #444;
+  color: var(--text-dim);
 }
 
 button {
   background: transparent;
-  border: 1px solid #00ff41;
-  color: #00ff41;
+  border: 1px solid var(--border);
+  color: var(--text);
   font-family: "Courier New", Courier, monospace;
   font-size: 0.85em;
   padding: 6px 14px;
   cursor: pointer;
   border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  transition: background var(--anim-speed), color var(--anim-speed);
 }
-
 button:hover {
-  background: #00ff41;
-  color: #0d0d0d;
+  background: var(--accent);
+  color: var(--bg);
 }
-
 button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
-
 button:disabled:hover {
   background: transparent;
-  color: #00ff41;
+  color: var(--text);
 }
-
 #cmd:disabled {
   opacity: 0.45;
 }
 
-@media (max-width: 600px) {
-  #output-container {
-    height: 300px;
-  }
+/* ── Battery notice ──────────────────────────────────────────────────────── */
+#battery-notice {
+  font-size: 0.75em;
+  color: var(--text-dim);
+  background: var(--bg-header);
+  padding: 4px 16px;
+  border-top: 1px solid var(--accent-dim);
+  text-align: center;
 }
+
+/* ── Energy Overlay ──────────────────────────────────────────────────────── */
+#energy-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+#energy-overlay[hidden] {
+  display: none;
+}
+
+#energy-modal {
+  background: #111;
+  border: 1px solid #00ff41;
+  border-radius: 10px;
+  padding: 28px 32px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #00ff41;
+  font-family: "Courier New", Courier, monospace;
+}
+
+#energy-modal h2 {
+  font-size: 1.4em;
+  text-align: center;
+}
+
+.energy-subtitle {
+  text-align: center;
+  color: #888;
+  font-size: 0.88em;
+}
+
+/* Mood buttons */
+#mood-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mood-btn {
+  font-size: 1.7em;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: border-color 0.15s, transform 0.1s;
+  line-height: 1;
+}
+.mood-btn:hover {
+  border-color: #00ff41;
+  transform: scale(1.15);
+  background: transparent;
+  color: inherit;
+}
+.mood-btn.selected {
+  border-color: #00ff41;
+  background: rgba(0, 255, 65, 0.1);
+  transform: scale(1.1);
+}
+
+/* Slider */
+.slider-label {
+  font-size: 0.85em;
+  color: #888;
+}
+
+.slider-wrapper {
+  position: relative;
+}
+
+#energy-slider {
+  width: 100%;
+  accent-color: #00ff41;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* Purpose input */
+#purpose-input {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #00ff41;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.88em;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+#purpose-input:focus {
+  border-color: #00ff41;
+}
+#purpose-input::placeholder {
+  color: #444;
+}
+
+/* Confirm button */
+#energy-confirm-btn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+#energy-confirm-btn:hover {
+  background: #00ff41;
+  color: #0d0d0d;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  #output-container { height: 280px; }
+  #shortcuts-bar    { gap: 4px; padding: 6px 10px; }
+  .shortcut-btn     { font-size: 0.72em; padding: 3px 8px; }
+  #energy-modal     { padding: 20px 16px; }
+}
+

@@ -7,28 +7,97 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- ── Energy Check-in Overlay ─────────────────────────────────────── -->
+  <div id="energy-overlay" role="dialog" aria-modal="true" aria-label="Check-in de Energia">
+    <div id="energy-modal">
+      <h2>🍦 Bem-vindo!</h2>
+      <p class="energy-subtitle">Como está sua energia agora?</p>
+
+      <!-- Mood selector -->
+      <div id="mood-selector" role="group" aria-label="Selecione seu humor">
+        <button class="mood-btn" data-mood="feliz"      title="Feliz">😊</button>
+        <button class="mood-btn" data-mood="triste"     title="Triste">😔</button>
+        <button class="mood-btn" data-mood="cansado"    title="Cansado">😴</button>
+        <button class="mood-btn" data-mood="motivado"   title="Motivado">💪</button>
+        <button class="mood-btn" data-mood="apaixonado" title="Apaixonado">😍</button>
+        <button class="mood-btn" data-mood="estressado" title="Estressado">😤</button>
+        <button class="mood-btn" data-mood="confuso"    title="Confuso">🤔</button>
+        <button class="mood-btn" data-mood="confiante"  title="Confiante">😎</button>
+      </div>
+
+      <!-- Energy slider -->
+      <label for="energy-slider" class="slider-label">
+        Nível de energia: <span id="energy-value">50</span>/100
+      </label>
+      <div class="slider-wrapper">
+        <input type="range" id="energy-slider" min="0" max="100" value="50"
+               aria-label="Nível de energia" />
+        <div id="energy-bar-fill"></div>
+      </div>
+
+      <!-- Purpose -->
+      <label for="purpose-input" class="slider-label">O que você vai fazer?</label>
+      <input type="text" id="purpose-input" placeholder="ex: malhar, estudar, relaxar…"
+             maxlength="100" autocomplete="off" />
+
+      <button id="energy-confirm-btn" onclick="confirmarEnergia()">
+        Entrar no Sistema ✓
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main Terminal ────────────────────────────────────────────────── -->
   <div id="terminal">
+
+    <!-- Header with energy bar -->
     <div id="header">
-      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
+      <div id="header-top">
+        <span class="prompt">🍦 Gelateria Sistema v2.0</span>
+        <div id="energy-status">
+          <span id="energy-mood-display">😊</span>
+          <div id="energy-mini-bar" title="Nível de energia">
+            <div id="energy-mini-fill"></div>
+          </div>
+          <span id="energy-score-display">50</span>
+          <button id="recheckin-btn" onclick="abrirCheckin()" title="Atualizar energia" aria-label="Atualizar energia">↺</button>
+        </div>
+      </div>
       <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
     </div>
 
+    <!-- Contextual shortcuts -->
+    <div id="shortcuts-bar" aria-label="Atalhos contextuais">
+      <button class="shortcut-btn" onclick="usarAtalho('listar sabores')"     title="Listar sabores">📋 Sabores</button>
+      <button class="shortcut-btn" onclick="usarAtalho('ver estoque')"        title="Ver estoque">📦 Estoque</button>
+      <button class="shortcut-btn" onclick="usarAtalho('listar pedidos')"     title="Listar pedidos">🧾 Pedidos</button>
+      <button class="shortcut-btn" onclick="usarAtalho('recomendar')"         title="Recomendação IA">✨ Recomendar</button>
+      <button class="shortcut-btn" onclick="usarAtalho('status')"             title="Status geral">📊 Status</button>
+    </div>
+
+    <!-- Output area -->
     <div id="output-container">
       <pre id="output">Bem-vindo ao Sistema de Gelateria!
 Digite 'ajuda' para ver os comandos disponíveis.
 </pre>
     </div>
 
+    <!-- Input area -->
     <div id="input-area">
       <span class="prompt-symbol">❯</span>
       <input
         type="text"
         id="cmd"
         autocomplete="off"
-        placeholder="Digite um comando..."
+        placeholder="Digite um comando…"
         autofocus
       />
       <button id="send-btn" onclick="enviarComando()">Enviar</button>
+    </div>
+
+    <!-- Battery warning -->
+    <div id="battery-notice" hidden>
+      ⚡ Bateria baixa — checkout rápido disponível
     </div>
   </div>
 

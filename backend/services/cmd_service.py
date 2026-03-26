@@ -7,6 +7,7 @@ from backend.models.sabor import (
 )
 from backend.models.pedido import listar_pedidos, criar_pedido
 from backend.models.estoque import ver_estoque, definir_estoque, ajustar_estoque, obter_estoque
+from backend.services.energy_service import recommend as energy_recommend
 
 
 def processar_comando(comando):
@@ -31,6 +32,9 @@ def processar_comando(comando):
             "    set estoque <sabor> <qtd>         → define a quantidade em estoque\n"
             "    add estoque <sabor> <qtd>         → aumenta o estoque de um sabor\n"
             "    reduzir estoque <sabor> <qtd>     → reduz o estoque de um sabor\n"
+            "\n"
+            "  Energia:\n"
+            "    recomendar                        → recomendação baseada na sua energia\n"
             "\n"
             "  Sistema:\n"
             "    status                            → resumo geral do sistema\n"
@@ -213,6 +217,25 @@ def processar_comando(comando):
 
     elif comando == "limpar":
         return "__LIMPAR__"
+
+    elif comando == "recomendar":
+        # Fallback text-based recommendation (no session tracking)
+        try:
+            result = energy_recommend(
+                session_id="cmd-anonymous",
+                energy_score=50,
+                mood=None,
+                purpose=None,
+            )
+            if result.get("flavor"):
+                return (
+                    f"{result['copy']}\n"
+                    f"  Recomendação: {result['flavor']} — R$ {result['price']:.2f}\n"
+                    f"  (use o painel de energia para personalizar)"
+                )
+            return "Nenhum sabor disponível para recomendar."
+        except Exception:
+            return "Recomendação indisponível no momento."
 
     else:
         return f"Comando não reconhecido: '{comando}'. Digite 'ajuda' para ver os comandos disponíveis."
