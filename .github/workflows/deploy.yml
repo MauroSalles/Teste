@@ -50,15 +50,14 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt pytest pytest-cov
 
       - name: Init test database
         run: |
           PGPASSWORD=testpassword psql -h localhost -U postgres -d gelateria_test -f database/schema.sql
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short
-        continue-on-error: true   # no tests yet — remove when tests are added
+        run: pytest tests/ -v --tb=short --cov=backend --cov-report=term-missing
 
   # ─────────────────────────────────────────────────────────
   # 2. Build Docker image (validates Dockerfile)

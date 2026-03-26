@@ -1,35 +1,80 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sistema de gerenciamento de gelateria via terminal web" />
+  <meta name="theme-color" content="#00ff41" />
   <title>🍦 Gelateria Sistema</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <div id="terminal">
-    <div id="header">
-      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
-      <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
-    </div>
+  <div id="app">
+    <!-- Top bar -->
+    <header id="topbar">
+      <div id="topbar-left">
+        <span class="logo">🍦</span>
+        <span class="logo-text">Gelateria Sistema</span>
+        <span id="version-badge">v2.0</span>
+      </div>
+      <div id="topbar-right">
+        <button id="theme-toggle" title="Alternar tema" aria-label="Alternar tema claro/escuro">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <span id="connection-status" class="status-dot connected" title="Conectado"></span>
+      </div>
+    </header>
 
-    <div id="output-container">
-      <pre id="output">Bem-vindo ao Sistema de Gelateria!
-Digite 'ajuda' para ver os comandos disponíveis.
+    <!-- Terminal window -->
+    <div id="terminal" role="main">
+      <div id="terminal-titlebar">
+        <div class="traffic-lights">
+          <span class="tl tl-red"></span>
+          <span class="tl tl-yellow"></span>
+          <span class="tl tl-green"></span>
+        </div>
+        <span id="terminal-title">gelateria — bash</span>
+      </div>
+
+      <div id="output-container" aria-live="polite" aria-label="Saída do terminal">
+        <pre id="output">Bem-vindo ao Sistema de Gelateria! 🍦
+Digite '<strong>ajuda</strong>' para ver os comandos disponíveis.
 </pre>
+      </div>
+
+      <div id="input-area">
+        <span class="prompt-symbol" aria-hidden="true">❯</span>
+        <input
+          type="text"
+          id="cmd"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Digite um comando... (ex: ajuda)"
+          autofocus
+          aria-label="Campo de comando"
+        />
+        <button id="send-btn" onclick="enviarComando()" aria-label="Enviar comando">
+          <span id="btn-text">Enviar</span>
+          <span id="btn-spinner" class="spinner" hidden aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <!-- Quick command chips -->
+      <div id="quick-cmds" role="navigation" aria-label="Comandos rápidos">
+        <button class="chip" data-cmd="ajuda">ajuda</button>
+        <button class="chip" data-cmd="listar sabores">sabores</button>
+        <button class="chip" data-cmd="listar pedidos">pedidos</button>
+        <button class="chip" data-cmd="ver estoque">estoque</button>
+        <button class="chip" data-cmd="status">status</button>
+        <button class="chip" data-cmd="limpar">limpar</button>
+      </div>
     </div>
 
-    <div id="input-area">
-      <span class="prompt-symbol">❯</span>
-      <input
-        type="text"
-        id="cmd"
-        autocomplete="off"
-        placeholder="Digite um comando..."
-        autofocus
-      />
-      <button id="send-btn" onclick="enviarComando()">Enviar</button>
-    </div>
+    <footer id="footer">
+      <span>Gelateria Sistema &copy; 2024</span>
+      <span id="request-count">0 requisições</span>
+    </footer>
   </div>
 
   <script src="script.js"></script>
