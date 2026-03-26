@@ -15,9 +15,19 @@ body {
   padding: 20px;
 }
 
-#terminal {
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+#app-container {
   width: 100%;
-  max-width: 860px;
+  max-width: 1300px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ── Terminal ─────────────────────────────────────────────────────────────── */
+#terminal {
+  flex: 1;
+  min-width: 0;
   background: #111;
   border: 1px solid #00ff41;
   border-radius: 8px;
@@ -119,8 +129,169 @@ button:disabled:hover {
   opacity: 0.45;
 }
 
+/* ── Dashboard Panel ──────────────────────────────────────────────────────── */
+#dashboard {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-card {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.05);
+}
+
+.dash-card h3 {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* KPI grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.kpi-item {
+  background: #1a1a1a;
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.kpi-label {
+  font-size: 0.65em;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 1.15em;
+  font-weight: bold;
+  color: #00ff41;
+}
+
+.kpi-value.accent {
+  color: #ffd700;
+}
+
+/* Top sabores list */
+.top-list {
+  list-style: none;
+  padding: 0;
+}
+
+.top-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #1e1e1e;
+  font-size: 0.82em;
+}
+
+.top-list li:last-child {
+  border-bottom: none;
+}
+
+.top-list .rank {
+  color: #555;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.top-list .flavor-name {
+  flex: 1;
+  padding: 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-list .units {
+  color: #ffd700;
+  flex-shrink: 0;
+}
+
+/* Alerts */
+.alert-badge {
+  display: inline-block;
+  background: #ff4444;
+  color: #fff;
+  font-size: 0.7em;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.alert-badge.ok {
+  background: #1a5c1a;
+  color: #00ff41;
+}
+
+.alert-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82em;
+  padding: 4px 0;
+}
+
+/* Refresh button */
+#refresh-btn {
+  width: 100%;
+  font-size: 0.75em;
+  padding: 5px 8px;
+  border-color: #333;
+  color: #555;
+}
+
+#refresh-btn:hover {
+  border-color: #00ff41;
+  color: #00ff41;
+  background: transparent;
+}
+
+/* Spinner */
+#dash-spinner {
+  text-align: center;
+  color: #333;
+  font-size: 0.75em;
+  padding: 6px 0;
+  display: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #app-container {
+    flex-direction: column;
+  }
+  #dashboard {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .dash-card {
+    flex: 1;
+    min-width: 240px;
+  }
+}
+
 @media (max-width: 600px) {
   #output-container {
     height: 300px;
   }
 }
+

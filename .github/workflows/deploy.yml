@@ -50,7 +50,7 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt
 
       - name: Init test database
         run: |
@@ -58,7 +58,6 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
-        continue-on-error: true   # no tests yet — remove when tests are added
 
   # ─────────────────────────────────────────────────────────
   # 2. Build Docker image (validates Dockerfile)

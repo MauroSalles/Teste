@@ -3,33 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🍦 Gelateria Sistema</title>
+  <title>🍦 Gelateria ERP</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="terminal">
-    <div id="header">
-      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
-      <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
-    </div>
+  <div id="app-container">
 
-    <div id="output-container">
-      <pre id="output">Bem-vindo ao Sistema de Gelateria!
+    <!-- ── Terminal ─────────────────────────────────────────────────────── -->
+    <div id="terminal">
+      <div id="header">
+        <span class="prompt">🍦 Gelateria ERP v2.0</span>
+        <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
+      </div>
+
+      <div id="output-container">
+        <pre id="output">Bem-vindo ao Sistema ERP de Gelateria!
 Digite 'ajuda' para ver os comandos disponíveis.
 </pre>
+      </div>
+
+      <div id="input-area">
+        <span class="prompt-symbol">❯</span>
+        <input
+          type="text"
+          id="cmd"
+          autocomplete="off"
+          placeholder="Digite um comando..."
+          autofocus
+        />
+        <button id="send-btn" onclick="enviarComando()">Enviar</button>
+      </div>
     </div>
 
-    <div id="input-area">
-      <span class="prompt-symbol">❯</span>
-      <input
-        type="text"
-        id="cmd"
-        autocomplete="off"
-        placeholder="Digite um comando..."
-        autofocus
-      />
-      <button id="send-btn" onclick="enviarComando()">Enviar</button>
-    </div>
+    <!-- ── Dashboard ────────────────────────────────────────────────────── -->
+    <aside id="dashboard" aria-label="Dashboard">
+
+      <!-- KPIs -->
+      <div class="dash-card">
+        <h3>📊 KPIs do Dia</h3>
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <span class="kpi-label">Pedidos hoje</span>
+            <span class="kpi-value" id="kpi-pedidos-hoje">—</span>
+          </div>
+          <div class="kpi-item">
+            <span class="kpi-label">Fat. hoje</span>
+            <span class="kpi-value accent" id="kpi-fat-hoje">—</span>
+          </div>
+          <div class="kpi-item">
+            <span class="kpi-label">Fat. mês</span>
+            <span class="kpi-value" id="kpi-fat-mes">—</span>
+          </div>
+          <div class="kpi-item">
+            <span class="kpi-label">Ticket médio</span>
+            <span class="kpi-value" id="kpi-ticket">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top sabores -->
+      <div class="dash-card">
+        <h3>🏆 Top Sabores</h3>
+        <ul class="top-list" id="top-sabores-list">
+          <li><span class="rank">—</span><span class="flavor-name">carregando…</span></li>
+        </ul>
+      </div>
+
+      <!-- Alerts -->
+      <div class="dash-card">
+        <h3>⚠️  Alertas</h3>
+        <div class="alert-row">
+          <span>Ingredientes em alerta</span>
+          <span class="alert-badge ok" id="alerta-ingredientes">0</span>
+        </div>
+        <div class="alert-row">
+          <span>Caixa</span>
+          <span id="caixa-status" style="font-size:0.82em;color:#555">—</span>
+        </div>
+      </div>
+
+      <!-- Refresh -->
+      <div id="dash-spinner">atualizando…</div>
+      <button id="refresh-btn" onclick="carregarDashboard()">↻ Atualizar dashboard</button>
+
+    </aside>
   </div>
 
   <script src="script.js"></script>
