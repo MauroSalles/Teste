@@ -41,3 +41,14 @@ def buscar_sabor_por_nome(nome):
             cursor.execute("SELECT * FROM sabores WHERE LOWER(nome) = LOWER(%s)", (nome,))
             return cursor.fetchone()
 
+
+def buscar_sabores_por_nome_parcial(termo):
+    """Return all flavors whose name contains *termo* (case-insensitive)."""
+    with get_db() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM sabores WHERE LOWER(nome) LIKE LOWER(%s) ORDER BY nome",
+                (f"%{termo}%",),
+            )
+            return cursor.fetchall()
+

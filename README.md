@@ -39,7 +39,24 @@ gelateria-system/
 
 ---
 
-## 🚀 Rodando Localmente
+## 💰 Custo de Hospedagem: R$ 0,00
+
+Este projeto foi projetado para rodar **completamente de graça** usando apenas planos gratuitos:
+
+| Serviço | Plano | Custo |
+|---------|-------|-------|
+| **Render** (backend + banco) | Free tier | **R$ 0/mês** |
+| **Vercel** (frontend) | Hobby (gratuito) | **R$ 0/mês** |
+| **GitHub Actions** (CI/CD) | 2 000 min/mês grátis | **R$ 0/mês** |
+| **GitHub** (código) | Free | **R$ 0/mês** |
+
+> **Nota sobre o Render Free:** O banco de dados PostgreSQL gratuito do Render expira 90 dias após a criação. Antes do vencimento, basta criar um novo banco gratuito e atualizar a variável `DATABASE_URL` — o processo leva menos de 5 minutos. Nenhum dado histórico precisa ser migrado em ambiente de testes acadêmicos.
+
+**Não são necessários** Redis, Kafka, serviços de IA pagos, ou qualquer outra infraestrutura além do que está listado acima.
+
+---
+
+
 
 ### Pré-requisitos
 - Python 3.12+
@@ -104,6 +121,7 @@ docker-compose up --build
 | Comando                              | Descrição                        |
 |--------------------------------------|----------------------------------|
 | `listar sabores`                     | Mostra sabores cadastrados       |
+| `buscar sabor <nome>`                | Busca sabores pelo nome (parcial)|
 | `add sabor <nome> <preco>`           | Adiciona um novo sabor           |
 | `atualizar sabor <id> <preco>`       | Atualiza o preço de um sabor     |
 | `remover sabor <id>`                 | Remove um sabor pelo ID          |
@@ -113,6 +131,7 @@ docker-compose up --build
 |--------------------------------------|----------------------------------|
 | `fazer pedido <sabor> <qtd>`         | Registra um pedido               |
 | `listar pedidos`                     | Mostra histórico de pedidos      |
+| `buscar pedido <id>`                 | Consulta um pedido pelo ID       |
 
 ### Estoque
 | Comando                              | Descrição                        |
@@ -121,6 +140,12 @@ docker-compose up --build
 | `set estoque <sabor> <qtd>`          | Define a quantidade em estoque   |
 | `add estoque <sabor> <qtd>`          | Aumenta o estoque de um sabor    |
 | `reduzir estoque <sabor> <qtd>`      | Reduz o estoque de um sabor      |
+
+### Relatórios
+| Comando                              | Descrição                        |
+|--------------------------------------|----------------------------------|
+| `relatorio vendas`                   | Ranking de vendas por sabor      |
+| `total vendas`                       | Receita e totais gerais          |
 
 ### Sistema
 | Comando                              | Descrição                        |
@@ -138,6 +163,9 @@ docker-compose up --build
   ID: 1 | Chocolate - R$ 10.00
   ID: 2 | Morango - R$ 9.50
 
+❯ buscar sabor choc
+  ID: 1 | Chocolate - R$ 10.00
+
 ❯ add sabor Pistache 12.00
   Sabor 'Pistache' adicionado com sucesso!
 
@@ -146,6 +174,19 @@ docker-compose up --build
 
 ❯ fazer pedido Chocolate 3
   Pedido registrado: 3x Chocolate — R$ 30.00
+
+❯ buscar pedido 1
+  ID: 1 | Chocolate x3 | Total: R$ 30.00 | 01/01/2025 14:30
+
+❯ relatorio vendas
+  ═══ Relatório de Vendas por Sabor ═══
+    1. Chocolate             |    3 unidades | R$    30.00
+
+❯ total vendas
+  ═══ Total de Vendas ═══
+    Pedidos realizados :  1
+    Unidades vendidas  :  3
+    Receita total      : R$  30.00
 
 ❯ status
   ═══ Status do Sistema ═══

@@ -4,8 +4,9 @@ from backend.models.sabor import (
     atualizar_sabor,
     remover_sabor,
     buscar_sabor_por_nome,
+    buscar_sabores_por_nome_parcial,
 )
-from backend.models.pedido import listar_pedidos, criar_pedido
+from backend.models.pedido import listar_pedidos, criar_pedido, buscar_pedido_por_id, relatorio_vendas, total_receita
 from backend.models.estoque import ver_estoque, definir_estoque, ajustar_estoque, obter_estoque
 
 
@@ -18,6 +19,7 @@ def processar_comando(comando):
             "\n"
             "  Sabores:\n"
             "    listar sabores                   → lista todos os sabores\n"
+            "    buscar sabor <nome>               → busca sabores pelo nome\n"
             "    add sabor <nome> <preco>          → adiciona um novo sabor\n"
             "    atualizar sabor <id> <preco>      → atualiza o preço de um sabor\n"
             "    remover sabor <id>                → remove um sabor pelo ID\n"
@@ -25,12 +27,17 @@ def processar_comando(comando):
             "  Pedidos:\n"
             "    fazer pedido <sabor> <qtd>        → registra um pedido\n"
             "    listar pedidos                    → exibe o histórico de pedidos\n"
+            "    buscar pedido <id>                → exibe um pedido pelo ID\n"
             "\n"
             "  Estoque:\n"
             "    ver estoque                       → mostra o estoque atual\n"
             "    set estoque <sabor> <qtd>         → define a quantidade em estoque\n"
             "    add estoque <sabor> <qtd>         → aumenta o estoque de um sabor\n"
             "    reduzir estoque <sabor> <qtd>     → reduz o estoque de um sabor\n"
+            "\n"
+            "  Relatórios:\n"
+            "    relatorio vendas                  → ranking de vendas por sabor\n"
+            "    total vendas                      → receita e totais gerais\n"
             "\n"
             "  Sistema:\n"
             "    status                            → resumo geral do sistema\n"
@@ -45,6 +52,16 @@ def processar_comando(comando):
         if not sabores:
             return "Nenhum sabor cadastrado."
         linhas = [f"ID: {s['id']} | {s['nome']} - R$ {float(s['preco']):.2f}" for s in sabores]
+        return "\n".join(linhas)
+
+    elif comando.startswith("buscar sabor "):
+        termo = comando[len("buscar sabor "):].strip()
+        if not termo:
+            return "Uso: buscar sabor <nome>  (ex: buscar sabor choc)"
+        resultados = buscar_sabores_por_nome_parcial(termo)
+        if not resultados:
+            return f"Nenhum sabor encontrado para '{termo}'."
+        linhas = [f"ID: {s['id']} | {s['nome']} - R$ {float(s['preco']):.2f}" for s in resultados]
         return "\n".join(linhas)
 
     elif comando.startswith("add sabor "):
@@ -128,6 +145,21 @@ def processar_comando(comando):
         ]
         return "\n".join(linhas)
 
+    elif comando.startswith("buscar pedido "):
+        partes = comando[len("buscar pedido "):].strip()
+        try:
+            pedido_id = int(partes)
+        except ValueError:
+            return "ID inválido. Use: buscar pedido <id>  (ex: buscar pedido 3)"
+        pedido = buscar_pedido_por_id(pedido_id)
+        if not pedido:
+            return f"Pedido ID {pedido_id} não encontrado."
+        return (
+            f"ID: {pedido['id']} | {pedido['sabor']} x{pedido['quantidade']} "
+            f"| Total: R$ {float(pedido['total']):.2f} "
+            f"| {pedido['data'].strftime('%d/%m/%Y %H:%M')}"
+        )
+
     # ── Estoque ───────────────────────────────────────────────────────────────
 
     elif comando == "ver estoque":
@@ -190,6 +222,32 @@ def processar_comando(comando):
             return f"Sabor '{nome_sabor}' não encontrado."
         resultado = ajustar_estoque(sabor["id"], -qtd)
         return f"Estoque de '{sabor['nome']}' reduzido. Total: {resultado['quantidade']} unidades."
+
+    # ── Relatórios ────────────────────────────────────────────────────────────
+
+    elif comando == "relatorio vendas":
+        dados = relatorio_vendas()
+        if not dados:
+            return "Nenhum pedido registrado ainda."
+        linhas = ["═══ Relatório de Vendas por Sabor ═══"]
+        for i, row in enumerate(dados, start=1):
+            linhas.append(
+                f"  {i}. {row['sabor']:20s} "
+                f"| {int(row['total_unidades']):4d} unidades "
+                f"| R$ {float(row['total_receita']):8.2f}"
+            )
+        return "\n".join(linhas)
+
+    elif comando == "total vendas":
+        dados = total_receita()
+        if not dados or int(dados["total_pedidos"]) == 0:
+            return "Nenhum pedido registrado ainda."
+        return (
+            "═══ Total de Vendas ═══\n"
+            f"  Pedidos realizados : {int(dados['total_pedidos'])}\n"
+            f"  Unidades vendidas  : {int(dados['total_unidades'])}\n"
+            f"  Receita total      : R$ {float(dados['total_receita']):.2f}"
+        )
 
     # ── Sistema ───────────────────────────────────────────────────────────────
 
