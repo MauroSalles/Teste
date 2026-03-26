@@ -3,36 +3,306 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🍦 Gelateria Sistema</title>
+  <title>🍦 Gelateria Pro — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="terminal">
-    <div id="header">
-      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
-      <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🍦</span>
+      <div>
+        <div class="logo-name">Gelateria Pro</div>
+        <div class="logo-tagline">Admin Dashboard</div>
+      </div>
     </div>
 
-    <div id="output-container">
-      <pre id="output">Bem-vindo ao Sistema de Gelateria!
-Digite 'ajuda' para ver os comandos disponíveis.
-</pre>
-    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="sabores">
+        <span class="nav-icon">🍨</span>
+        <span>Sabores</span>
+      </a>
+      <a href="#" class="nav-item" data-page="pedidos">
+        <span class="nav-icon">🛒</span>
+        <span>Pedidos</span>
+      </a>
+      <a href="#" class="nav-item" data-page="estoque">
+        <span class="nav-icon">📦</span>
+        <span>Estoque</span>
+      </a>
+    </nav>
 
-    <div id="input-area">
-      <span class="prompt-symbol">❯</span>
-      <input
-        type="text"
-        id="cmd"
-        autocomplete="off"
-        placeholder="Digite um comando..."
-        autofocus
-      />
-      <button id="send-btn" onclick="enviarComando()">Enviar</button>
+    <div class="sidebar-footer">
+      <div class="status-dot"></div>
+      <span>Sistema Online</span>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ──────────────────────────────────────────── -->
+  <main id="main">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">☰</button>
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <button class="btn btn-icon" id="refresh-btn" title="Atualizar dados">↻</button>
+      </div>
+    </header>
+
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+
+    <!-- ── Dashboard Page ──────────────────────────────────────── -->
+    <section id="page-dashboard" class="page active">
+      <div class="kpi-grid">
+        <div class="kpi-card" id="kpi-receita">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-info">
+            <div class="kpi-label">Receita Total</div>
+            <div class="kpi-value" id="kpi-receita-val">—</div>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-pedidos">
+          <div class="kpi-icon">🛒</div>
+          <div class="kpi-info">
+            <div class="kpi-label">Total Pedidos</div>
+            <div class="kpi-value" id="kpi-pedidos-val">—</div>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-ticket">
+          <div class="kpi-icon">🎫</div>
+          <div class="kpi-info">
+            <div class="kpi-label">Ticket Médio</div>
+            <div class="kpi-value" id="kpi-ticket-val">—</div>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-sabores">
+          <div class="kpi-icon">🍨</div>
+          <div class="kpi-info">
+            <div class="kpi-label">Sabores Ativos</div>
+            <div class="kpi-value" id="kpi-sabores-val">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🏆 Top Sabores</h2>
+          </div>
+          <div class="card-body" id="top-sabores-list">
+            <div class="skeleton-block"></div>
+            <div class="skeleton-block"></div>
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⚠️ Alertas de Estoque</h2>
+          </div>
+          <div class="card-body" id="alertas-estoque-list">
+            <div class="skeleton-block"></div>
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Sabores Page ────────────────────────────────────────── -->
+    <section id="page-sabores" class="page">
+      <div class="page-actions">
+        <button class="btn btn-primary" id="btn-add-sabor">+ Novo Sabor</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🍨 Cardápio de Sabores</h2>
+          <input class="search-input" id="search-sabores" type="text" placeholder="Buscar sabor…" />
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table id="table-sabores">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Preço</th>
+                  <th>Estoque</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-sabores">
+                <tr><td colspan="5" class="table-empty">Carregando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Pedidos Page ────────────────────────────────────────── -->
+    <section id="page-pedidos" class="page">
+      <div class="page-actions">
+        <button class="btn btn-primary" id="btn-add-pedido">+ Novo Pedido</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🛒 Histórico de Pedidos</h2>
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table id="table-pedidos">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Sabor</th>
+                  <th>Qtd</th>
+                  <th>Valor</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-pedidos">
+                <tr><td colspan="5" class="table-empty">Carregando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Estoque Page ────────────────────────────────────────── -->
+    <section id="page-estoque" class="page">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📦 Controle de Estoque</h2>
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table id="table-estoque">
+              <thead>
+                <tr>
+                  <th>Sabor</th>
+                  <th>Quantidade</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-estoque">
+                <tr><td colspan="4" class="table-empty">Carregando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Modals ──────────────────────────────────────────────── -->
+
+  <!-- Add/Edit Sabor Modal -->
+  <div id="modal-sabor" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-sabor-title">Novo Sabor</h3>
+        <button class="modal-close" data-close="modal-sabor">×</button>
+      </div>
+      <form id="form-sabor" class="modal-body">
+        <input type="hidden" id="sabor-id" />
+        <div class="form-group">
+          <label for="sabor-nome">Nome do sabor</label>
+          <input type="text" id="sabor-nome" class="form-input" placeholder="Ex: Pistache" required />
+        </div>
+        <div class="form-group">
+          <label for="sabor-preco">Preço (R$)</label>
+          <input type="number" id="sabor-preco" class="form-input" step="0.01" min="0" placeholder="0.00" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-sabor">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-sabor-submit">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Pedido Modal -->
+  <div id="modal-pedido" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Novo Pedido</h3>
+        <button class="modal-close" data-close="modal-pedido">×</button>
+      </div>
+      <form id="form-pedido" class="modal-body">
+        <div class="form-group">
+          <label for="pedido-sabor">Sabor</label>
+          <select id="pedido-sabor" class="form-input" required>
+            <option value="">Selecione um sabor…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pedido-qtd">Quantidade</label>
+          <input type="number" id="pedido-qtd" class="form-input" min="1" value="1" required />
+        </div>
+        <div id="pedido-total-preview" class="total-preview" hidden>
+          Total: <strong id="pedido-total-val">R$ 0,00</strong>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-pedido">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar Pedido</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Estoque Modal -->
+  <div id="modal-estoque" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Atualizar Estoque</h3>
+        <button class="modal-close" data-close="modal-estoque">×</button>
+      </div>
+      <form id="form-estoque" class="modal-body">
+        <input type="hidden" id="estoque-sabor-id" />
+        <div class="form-group">
+          <label>Sabor</label>
+          <div id="estoque-sabor-nome" class="form-static"></div>
+        </div>
+        <div class="form-group">
+          <label for="estoque-qtd">Nova quantidade</label>
+          <input type="number" id="estoque-qtd" class="form-input" min="0" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-estoque">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div id="modal-confirm" class="modal-overlay" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>Confirmar Exclusão</h3>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-msg">Tem certeza que deseja remover este item?</p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-confirm">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-ok">Remover</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
-

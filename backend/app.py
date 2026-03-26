@@ -3,6 +3,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 
+from backend.routes.api_routes import api_bp
 from backend.routes.cmd_routes import cmd_bp
 from backend.routes.health_routes import health_bp
 
@@ -31,6 +32,7 @@ def create_app():
 
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(api_bp)
 
     return app
 
