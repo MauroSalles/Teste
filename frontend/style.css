@@ -1,13 +1,7 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Kept for backward compatibility — main styles are in css/style.css */
+@import url('css/style.css');
+@import url('css/animations.css');
 
-body {
-  background: #0d0d0d;
-  color: #00ff41;
-  font-family: "Courier New", Courier, monospace;
   display: flex;
   justify-content: center;
   align-items: flex-start;
