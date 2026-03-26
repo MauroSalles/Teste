@@ -19,6 +19,21 @@ CREATE TABLE IF NOT EXISTS estoque (
     quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS payments (
+    id                SERIAL PRIMARY KEY,
+    order_id          INTEGER NOT NULL,
+    user_id           INTEGER NOT NULL,
+    amount            DECIMAL(10, 2) NOT NULL,
+    method            VARCHAR(50) NOT NULL,
+    status            VARCHAR(50) NOT NULL DEFAULT 'pending',
+    transaction_id    VARCHAR(255) UNIQUE,
+    stripe_payment_id VARCHAR(255),
+    pix_qr_code       TEXT,
+    metadata          JSONB,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
