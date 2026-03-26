@@ -1,13 +1,14 @@
 {
   "version": 2,
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
+  "buildCommand": "echo 'Static site — no build step'",
+  "outputDirectory": "frontend",
   "env": {
-    "API_URL": "@api_url"
+    "VITE_API_URL": "@vite_api_url"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
   },
   "headers": [
     {
@@ -19,9 +20,48 @@
         },
         {
           "key": "X-Frame-Options",
-          "value": "DENY"
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(self), microphone=()"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://gelateria-backend.onrender.com/api/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": false
+    }
   ]
 }
+
