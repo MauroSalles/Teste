@@ -1,0 +1,91 @@
+<!-- frontend/components/payment-dashboard.html -->
+<div class="payment-dashboard">
+    <h2>Histórico de Pagamentos</h2>
+
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Valor</th>
+                <th>Método</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="payments-tbody">
+            <!-- Populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        async function loadPaymentHistory() {
+            const token = localStorage.getItem('auth_token') || '';
+            const response = await fetch('/api/payments/methods', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                console.error('Failed to load payment history');
+                return;
+            }
+
+            const data = await response.json();
+            const tbody = document.getElementById('payments-tbody');
+
+            (data.methods || []).forEach(payment => {
+                const row = document.createElement('tr');
+                const orderCell = document.createElement('td');
+                const amountCell = document.createElement('td');
+                const methodCell = document.createElement('td');
+                const statusCell = document.createElement('td');
+                const dateCell = document.createElement('td');
+                const actionCell = document.createElement('td');
+
+                orderCell.textContent = `#${payment.order_id}`;
+                amountCell.textContent = `R$ ${Number(payment.amount).toFixed(2)}`;
+                methodCell.textContent = payment.method.toUpperCase();
+
+                const statusSpan = document.createElement('span');
+                statusSpan.className = `status-${payment.status}`;
+                statusSpan.textContent = payment.status;
+                statusCell.appendChild(statusSpan);
+
+                dateCell.textContent = new Date(payment.created_at).toLocaleDateString('pt-BR');
+
+                if (payment.status === 'completed') {
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Recibo';
+                    btn.addEventListener('click', () => downloadInvoice(payment.id));
+                    actionCell.appendChild(btn);
+                }
+
+                row.appendChild(orderCell);
+                row.appendChild(amountCell);
+                row.appendChild(methodCell);
+                row.appendChild(statusCell);
+                row.appendChild(dateCell);
+                row.appendChild(actionCell);
+                tbody.appendChild(row);
+            });
+        }
+
+        async function downloadInvoice(paymentId) {
+            const token = localStorage.getItem('auth_token') || '';
+            const response = await fetch(`/api/payments/invoice/${paymentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `recibo-${paymentId}.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        loadPaymentHistory();
+    </script>
+</div>
