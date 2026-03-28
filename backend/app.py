@@ -5,6 +5,8 @@ from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
 from backend.routes.health_routes import health_bp
+from backend.routes.social_routes import social_bp
+from backend.features.ar_preview import ar_bp
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,8 @@ def create_app():
 
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(social_bp)
+    app.register_blueprint(ar_bp)
 
     return app
 

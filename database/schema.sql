@@ -19,6 +19,46 @@ CREATE TABLE IF NOT EXISTS estoque (
     quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0)
 );
 
+-- Social Commerce tables
+
+CREATE TABLE IF NOT EXISTS orders (
+    id              SERIAL PRIMARY KEY,
+    customer_phone  VARCHAR(30) NOT NULL,
+    customer_name   VARCHAR(150) NOT NULL,
+    flavor_id       INTEGER NOT NULL REFERENCES sabores(id) ON DELETE CASCADE,
+    quantity        INTEGER NOT NULL CHECK (quantity > 0),
+    address         TEXT NOT NULL,
+    status          VARCHAR(50) NOT NULL DEFAULT 'pending_payment',
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS instagram_posts (
+    id                SERIAL PRIMARY KEY,
+    post_id           VARCHAR(100) NOT NULL,
+    flavor_id         INTEGER REFERENCES sabores(id) ON DELETE SET NULL,
+    impressions       INTEGER NOT NULL DEFAULT 0,
+    clicks            INTEGER NOT NULL DEFAULT 0,
+    conversion_rate   DECIMAL(5, 4) NOT NULL DEFAULT 0,
+    revenue_generated DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ugc_campaigns (
+    id          SERIAL PRIMARY KEY,
+    hashtag     VARCHAR(150) NOT NULL,
+    prize_pool  DECIMAL(10, 2) NOT NULL,
+    status      VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ugc_prizes (
+    id           SERIAL PRIMARY KEY,
+    post_id      VARCHAR(100) NOT NULL,
+    prize_amount DECIMAL(10, 2) NOT NULL,
+    reason       VARCHAR(255),
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
