@@ -1,16 +1,30 @@
+import decimal
 import os
 import logging
 from flask import Flask
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
 from backend.routes.health_routes import health_bp
+from backend.routes.referral_routes import referral_bp
+
+
+class _JSONProvider(DefaultJSONProvider):
+    """Extend Flask's default JSON provider to handle Decimal values."""
+
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        return super().default(obj)
 
 logger = logging.getLogger(__name__)
 
 
 def create_app():
     app = Flask(__name__)
+    app.json_provider_class = _JSONProvider
+    app.json = _JSONProvider(app)
 
     flask_env = os.environ.get("FLASK_ENV", "production")
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "")
@@ -31,6 +45,7 @@ def create_app():
 
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(referral_bp)
 
     return app
 
