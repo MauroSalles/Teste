@@ -19,6 +19,14 @@ CREATE TABLE IF NOT EXISTS estoque (
     quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS chat_logs (
+    id           SERIAL PRIMARY KEY,
+    user_id      INTEGER,
+    user_message TEXT NOT NULL,
+    bot_response TEXT NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
@@ -27,4 +35,5 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Pistache', 12.00),
     ('Limão', 9.00)
 ON CONFLICT DO NOTHING;
+
 
