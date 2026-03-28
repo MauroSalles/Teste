@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
 from backend.routes.health_routes import health_bp
+from backend.routes.ai_routes import ai_bp
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ def create_app():
 
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(ai_bp)
 
     return app
 
