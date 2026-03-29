@@ -19,6 +19,55 @@ CREATE TABLE IF NOT EXISTS estoque (
     quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0)
 );
 
+-- Users table (for gamification / loyalty system)
+CREATE TABLE IF NOT EXISTS users (
+    id             SERIAL PRIMARY KEY,
+    name           VARCHAR(200) NOT NULL,
+    email          VARCHAR(255) NOT NULL UNIQUE,
+    password_hash  VARCHAR(255) NOT NULL,
+    avatar_url     VARCHAR(500),
+    level          INTEGER NOT NULL DEFAULT 1,
+    total_points   INTEGER NOT NULL DEFAULT 0,
+    level_updated_at TIMESTAMP,
+    deleted_at     TIMESTAMP,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Referral conversions (used by leaderboard & loyalty)
+CREATE TABLE IF NOT EXISTS referral_conversions (
+    id           SERIAL PRIMARY KEY,
+    referrer_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    referred_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status       VARCHAR(50) NOT NULL DEFAULT 'pending',
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User badges (gamification)
+CREATE TABLE IF NOT EXISTS user_badges (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    badge_type  VARCHAR(100) NOT NULL,
+    badge_data  JSONB,
+    awarded_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Daily challenges (gamification)
+CREATE TABLE IF NOT EXISTS daily_challenges (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenges JSONB NOT NULL,
+    date       DATE NOT NULL DEFAULT CURRENT_DATE,
+    UNIQUE (user_id, date)
+);
+
+-- Wheel spins (gamification)
+CREATE TABLE IF NOT EXISTS wheel_spins (
+    id       SERIAL PRIMARY KEY,
+    user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reward   VARCHAR(200) NOT NULL,
+    spun_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
