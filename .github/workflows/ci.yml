@@ -1,0 +1,43 @@
+name: CI — Gelateria Sistema
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ── Lint ────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (flake8)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install flake8
+        run: pip install flake8
+      - name: Run flake8
+        run: flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  # ── Tests ───────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+      - name: Run tests
+        env:
+          FLASK_ENV: testing
+          JWT_SECRET_KEY: ci-test-secret
+        run: PYTHONPATH=${{ github.workspace }} python -m pytest tests/ -v --tb=short

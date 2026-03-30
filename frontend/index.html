@@ -5,11 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🍦 Gelateria Sistema</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
 </head>
 <body>
   <div id="terminal">
     <div id="header">
-      <span class="prompt">🍦 Gelateria Sistema v1.1</span>
+      <div id="header-top">
+        <span class="prompt">🍦 Gelateria Sistema v1.1</span>
+        <div id="header-nav">
+          <a href="dashboard.html">📊 Dashboard</a>
+          <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+        </div>
+      </div>
       <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
     </div>
 
@@ -33,6 +41,34 @@ Digite 'ajuda' para ver os comandos disponíveis.
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('theme-toggle');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme');
+        btn.textContent = '🌙';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light');
+        btn.textContent = '☀️';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    // Restore saved theme
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('theme-toggle');
+        if (btn) btn.textContent = '☀️';
+      });
+    }
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>
 

@@ -2,6 +2,18 @@
   "version": 2,
   "routes": [
     {
+      "src": "/dashboard",
+      "dest": "/dashboard.html"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "/sw.js"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
