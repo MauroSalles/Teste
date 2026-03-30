@@ -29,7 +29,7 @@ def token_required(f):
             logger.warning("Invalid JWT token: %s", e)
             return jsonify({"error": "Invalid token"}), 401
 
-        current_user = {"id": payload.get("sub"), "email": payload.get("email")}
+        current_user = {"id": int(payload.get("sub")), "email": payload.get("email")}
         return f(current_user, *args, **kwargs)
 
     return decorated
@@ -40,7 +40,7 @@ def generate_token(user_id, email):
     import datetime
 
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "email": email,
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24),
         "iat": datetime.datetime.now(datetime.timezone.utc),

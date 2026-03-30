@@ -1,3 +1,30 @@
+/* ── CSS Variables — theme support ─────────────────────────────────────── */
+:root {
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #111;
+  --bg-header: #1a1a1a;
+  --text-primary: #00ff41;
+  --text-muted: #888;
+  --border-color: #00ff41;
+  --btn-hover-bg: #00ff41;
+  --btn-hover-text: #0d0d0d;
+  --placeholder-color: #444;
+  --shadow-color: rgba(0, 255, 65, 0.25);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-header: #e8e8e8;
+  --text-primary: #1a7a1a;
+  --text-muted: #555;
+  --border-color: #1a7a1a;
+  --btn-hover-bg: #1a7a1a;
+  --btn-hover-text: #ffffff;
+  --placeholder-color: #aaa;
+  --shadow-color: rgba(26, 122, 26, 0.2);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,44 +32,89 @@
 }
 
 body {
-  background: #0d0d0d;
-  color: #00ff41;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: "Courier New", Courier, monospace;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
   padding: 20px;
+  transition: background 0.3s, color 0.3s;
 }
 
 #terminal {
   width: 100%;
   max-width: 860px;
-  background: #111;
-  border: 1px solid #00ff41;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.25);
+  box-shadow: 0 0 20px var(--shadow-color);
   overflow: hidden;
 }
 
 #header {
-  background: #1a1a1a;
-  border-bottom: 1px solid #00ff41;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
   padding: 10px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+#header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#header-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#header-nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.85em;
+  border: 1px solid var(--border-color);
+  padding: 3px 10px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+#header-nav a:hover {
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+}
+
+#theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.85em;
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: "Courier New", Courier, monospace;
+  transition: background 0.2s, color 0.2s;
+}
+
+#theme-toggle:hover {
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+}
+
 .prompt {
   font-weight: bold;
   font-size: 1.1em;
-  color: #00ff41;
+  color: var(--text-primary);
 }
 
 .subtitle {
   font-size: 0.8em;
-  color: #888;
+  color: var(--text-muted);
 }
 
 #output-container {
@@ -59,16 +131,16 @@ body {
 }
 
 #input-area {
-  border-top: 1px solid #00ff41;
+  border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   padding: 10px 16px;
   gap: 8px;
-  background: #111;
+  background: var(--bg-secondary);
 }
 
 .prompt-symbol {
-  color: #00ff41;
+  color: var(--text-primary);
   font-size: 1.1em;
   flex-shrink: 0;
 }
@@ -77,21 +149,21 @@ body {
   flex: 1;
   background: transparent;
   border: none;
-  color: #00ff41;
+  color: var(--text-primary);
   font-family: "Courier New", Courier, monospace;
   font-size: 0.95em;
   outline: none;
-  caret-color: #00ff41;
+  caret-color: var(--text-primary);
 }
 
 #cmd::placeholder {
-  color: #444;
+  color: var(--placeholder-color);
 }
 
 button {
   background: transparent;
-  border: 1px solid #00ff41;
-  color: #00ff41;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-family: "Courier New", Courier, monospace;
   font-size: 0.85em;
   padding: 6px 14px;
@@ -101,8 +173,8 @@ button {
 }
 
 button:hover {
-  background: #00ff41;
-  color: #0d0d0d;
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
 }
 
 button:disabled {
@@ -112,7 +184,7 @@ button:disabled {
 
 button:disabled:hover {
   background: transparent;
-  color: #00ff41;
+  color: var(--text-primary);
 }
 
 #cmd:disabled {
@@ -124,3 +196,4 @@ button:disabled:hover {
     height: 300px;
   }
 }
+

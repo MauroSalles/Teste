@@ -68,6 +68,15 @@ CREATE TABLE IF NOT EXISTS wheel_spins (
     spun_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Loyalty points (fidelidade)
+CREATE TABLE IF NOT EXISTS fidelidade (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    pontos     INTEGER NOT NULL DEFAULT 0,
+    resgates   INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
