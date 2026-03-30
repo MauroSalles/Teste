@@ -6,6 +6,8 @@ from flask_cors import CORS
 from backend.routes.cmd_routes import cmd_bp
 from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
+from backend.routes.api_routes import api_bp
+from backend.routes.auth_routes import auth_bp
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,8 @@ def create_app():
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(gamification_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(auth_bp)
 
     return app
 
