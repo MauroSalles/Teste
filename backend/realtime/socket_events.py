@@ -3,7 +3,6 @@
 import logging
 import threading
 import datetime
-from datetime import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ try:
         while True:
             time.sleep(30)
             try:
-                emit_dashboard_atualizado({"timestamp": datetime.datetime.now(timezone.utc).isoformat()})
+                emit_dashboard_atualizado({"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()})
             except Exception as exc:
                 logger.warning("dashboard background task error: %s", exc)
 

@@ -7,6 +7,7 @@ from backend.database import get_db
 
 logger = logging.getLogger(__name__)
 
+# Business rule: cap discounts at R$20 or 50% of order value to prevent abuse
 _MAX_DISCOUNT_ABS = 20.00
 _MAX_DISCOUNT_PCT_OF_ORDER = 0.50
 

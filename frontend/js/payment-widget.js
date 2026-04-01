@@ -12,6 +12,7 @@
       : ''
   );
 
+  // Poll for 60 seconds total (12 × 5s) to match backend auto-approve timeout
   const MAX_POLL_ATTEMPTS = 12;
   const POLL_INTERVAL_MS = 5000;
 

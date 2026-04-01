@@ -27,6 +27,11 @@ class TestChatRoute:
         assert resp.status_code == 200
         data = resp.get_json()
         assert "response" in data
+        # Predefined response should mention at least one flavor
+        assert any(
+            flavor in data["response"].lower()
+            for flavor in ("chocolate", "morango", "baunilha", "açaí", "sabor")
+        )
 
     @patch("backend.ai.chatbot_service.os.environ.get")
     @patch("backend.ai.chatbot_service._openai_chat")

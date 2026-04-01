@@ -6,7 +6,8 @@ import time
 
 logger = logging.getLogger(__name__)
 
-_MOCK_PAYMENT_TIMEOUT_SECONDS = 60
+# After this many seconds the mock auto-approves the payment (simulates bank confirmation)
+_MOCK_PAYMENT_AUTO_APPROVE_SECONDS = 60
 
 # In-memory store for demo purposes
 _pix_charges = {}
@@ -41,7 +42,7 @@ def check_pix_status(txid):
         return {"txid": txid, "status": "nao_encontrado"}
 
     elapsed = time.time() - charge["created_at"]
-    if elapsed > _MOCK_PAYMENT_TIMEOUT_SECONDS:
+    if elapsed > _MOCK_PAYMENT_AUTO_APPROVE_SECONDS:
         charge["status"] = "pago"
 
     return {"txid": txid, "status": charge["status"], "valor": charge.get("valor")}
