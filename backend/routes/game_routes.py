@@ -87,11 +87,11 @@ def check_in():
                     return jsonify({"message": "Check-in já realizado hoje!", "xp_ganho": 0}), 200
                 if not row:
                     cur.execute("INSERT INTO game_profiles (user_id, xp, nivel) VALUES (%s, 50, 1)", (user_id,))
+                    cur.execute("UPDATE game_profiles SET last_checkin = %s WHERE user_id = %s", (today, user_id))
                 else:
                     cur.execute("""
                         UPDATE game_profiles SET xp = xp + 50, last_checkin = %s WHERE user_id = %s
                     """, (today, user_id))
-                cur.execute("UPDATE game_profiles SET last_checkin = %s WHERE user_id = %s", (today, user_id))
     except Exception:
         return jsonify({"message": "Check-in realizado! (+50 XP)", "xp_ganho": 50, "source": "mock"})
 

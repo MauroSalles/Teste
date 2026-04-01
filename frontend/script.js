@@ -192,7 +192,6 @@ async function handlePedir(saborNome, quantidade) {
 function promptUser(label) {
   return new Promise(resolve => {
     appendOutput(label);
-    const originalHandler = cmdInput.onkeydown;
     cmdInput.disabled = false;
     sendBtn.disabled = true;
     cmdInput.value = "";

@@ -162,8 +162,8 @@ def criar_avaliacao(sabor_id):
                     RETURNING id, sabor_id, nota, comentario, sentimento, created_at
                 """, (sabor_id, user_id, nota, comentario, sentimento))
                 row = cur.fetchone()
-    except Exception as e:
-        return jsonify({"error": "Não foi possível salvar a avaliação", "detail": str(e)}), 500
+    except Exception:
+        return jsonify({"error": "Não foi possível salvar a avaliação"}), 500
 
     return jsonify(dict(row)), 201
 
