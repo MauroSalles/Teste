@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
@@ -37,6 +37,53 @@ def create_app():
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+
+    # Optional blueprints — registered only when dependencies are available
+    try:
+        from backend.routes.payment_routes import payment_bp
+        app.register_blueprint(payment_bp)
+    except ImportError as exc:
+        logger.warning("payment_bp not registered: %s", exc)
+
+    try:
+        from backend.routes.ai_routes import ai_bp
+        app.register_blueprint(ai_bp)
+    except ImportError as exc:
+        logger.warning("ai_bp not registered: %s", exc)
+
+    try:
+        from backend.routes.loyalty_routes import loyalty_bp
+        app.register_blueprint(loyalty_bp)
+    except ImportError as exc:
+        logger.warning("loyalty_bp not registered: %s", exc)
+
+    try:
+        from backend.routes.notification_routes import notification_bp
+        app.register_blueprint(notification_bp)
+    except ImportError as exc:
+        logger.warning("notification_bp not registered: %s", exc)
+
+    # Socket.IO — optional
+    try:
+        from backend.realtime.socket_events import init_socketio
+        init_socketio(app)
+        logger.info("Flask-SocketIO initialized")
+    except ImportError as exc:
+        logger.warning("SocketIO not initialized: %s", exc)
+
+    # Global error handlers
+    @app.errorhandler(404)
+    def not_found(e):
+        return jsonify({"error": "Recurso não encontrado"}), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return jsonify({"error": "Método não permitido"}), 405
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        logger.exception("Internal server error: %s", e)
+        return jsonify({"error": "Erro interno do servidor"}), 500
 
     return app
 
