@@ -8,6 +8,11 @@ from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
 from backend.routes.api_routes import api_bp
 from backend.routes.auth_routes import auth_bp
+from backend.routes.payment_routes import payment_bp
+from backend.routes.ai_routes import ai_bp
+from backend.routes.loyalty_routes import loyalty_bp
+from backend.routes.notification_routes import notification_bp
+from backend.realtime.socket_events import socketio
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +42,12 @@ def create_app():
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(payment_bp)
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(loyalty_bp)
+    app.register_blueprint(notification_bp)
+
+    socketio.init_app(app, cors_allowed_origins=cors_origins or "*")
 
     return app
 
@@ -46,4 +57,4 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV", "production") == "development"
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    socketio.run(app, host="0.0.0.0", port=port, debug=debug)
