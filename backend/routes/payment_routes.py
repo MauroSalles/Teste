@@ -43,7 +43,7 @@ def stripe_webhook():
         return jsonify(result), 200
     except Exception as exc:
         logger.warning("Webhook error: %s", exc)
-        return jsonify({"error": str(exc)}), 400
+        return jsonify({"error": "Webhook inválido"}), 400
 
 
 # ── PIX ───────────────────────────────────────────────────────────────────────
