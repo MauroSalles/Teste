@@ -197,3 +197,55 @@ button:disabled:hover {
   }
 }
 
+/* ── Micro-animations ────────────────────────────────────────────────────── */
+
+@keyframes fadeInLine {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.output-line {
+  display: block;
+  animation: fadeInLine 0.18s ease-out both;
+}
+
+/* Typing dots for loading state */
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40%            { opacity: 1; }
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  margin: 0 1px;
+  vertical-align: middle;
+  animation: blink 1.2s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+#typing-indicator {
+  padding: 4px 0 0 2px;
+  height: 1.4em;
+  display: none;
+}
+
+#typing-indicator.visible {
+  display: block;
+}
+
+/* Tab-completion suggestion */
+#autocomplete-hint {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  padding: 2px 16px;
+  height: 1.4em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
