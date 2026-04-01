@@ -11,16 +11,15 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 
 | Área | Funcionalidades |
 |------|----------------|
-| 💻 **Terminal CMD** | Interface web tipo terminal com autocomplete, histórico, toasts e command palette (Ctrl+K) |
+| 💻 **Terminal CMD** | Interface web tipo terminal com histórico de comandos e feedback visual |
 | 🌐 **REST API** | Endpoints completos para sabores, pedidos, estoque, relatórios e fidelidade |
 | 🔐 **Autenticação** | Registro, login com JWT, `/me` protegido |
 | 📊 **Dashboard** | Painel admin com cards de resumo, tabela de pedidos, gráfico de sabores populares e alertas de estoque |
 | 📈 **Relatórios** | Vendas diárias/semanais/mensais e ranking de sabores |
 | 🎯 **Fidelidade** | 10 pontos por item pedido, resgate a cada 100 pontos |
-| 🎮 **Gamification** | Badges, níveis, spin-wheel, leaderboard, desafios diários |
 | 🌙 **Dark/Light Mode** | Toggle de tema persistido em localStorage |
 | 📱 **PWA** | Service worker para funcionamento offline |
-| 🧪 **Testes** | 51 testes automatizados (pytest) sem banco de dados real |
+| 🧪 **Testes** | Testes automatizados (pytest) sem banco de dados real |
 | 🚀 **CI/CD** | GitHub Actions (lint + testes) em push/PR |
 
 ---
@@ -43,8 +42,7 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 │   │   ├── cmd_routes.py         # POST /cmd
 │   │   ├── health_routes.py      # GET /health
 │   │   ├── api_routes.py         # REST API /api/*
-│   │   ├── auth_routes.py        # Auth /api/auth/*
-│   │   └── gamification_routes.py
+│   │   └── auth_routes.py        # Auth /api/auth/*
 │   └── services/
 │       └── cmd_service.py        # Command parser
 ├── frontend/
@@ -55,14 +53,12 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 │   ├── manifest.json             # PWA manifest
 │   └── sw.js                     # Service worker
 ├── database/
-│   └── schema.sql                # PostgreSQL schema (9 tabelas)
+│   └── schema.sql                # PostgreSQL schema (5 tabelas)
 ├── tests/
 │   ├── conftest.py
 │   ├── test_api_routes.py        # REST API tests
 │   ├── test_auth.py              # Auth flow tests
-│   ├── test_cmd_service.py       # Command parser tests
-│   ├── test_ar_system.py
-│   └── test_gamification.py
+│   └── test_cmd_service.py       # Command parser tests
 ├── .github/workflows/
 │   ├── ci.yml                    # Lint + tests
 │   └── deploy.yml                # Deploy to Render
@@ -186,7 +182,7 @@ pip install pytest
 PYTHONPATH=. python -m pytest tests/ -v
 ```
 
-51 testes — todos passam sem banco de dados real (mocks).
+Todos os testes passam sem banco de dados real (mocks).
 
 ---
 

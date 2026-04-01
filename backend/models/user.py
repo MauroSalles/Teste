@@ -30,7 +30,7 @@ def criar_usuario(name: str, email: str, password: str):
                 """
                 INSERT INTO users (name, email, password_hash)
                 VALUES (%s, %s, %s)
-                RETURNING id, name, email, level, total_points, created_at
+                RETURNING id, name, email, created_at
                 """,
                 (name, email, password_hash),
             )
@@ -41,7 +41,7 @@ def buscar_usuario_por_email(email: str):
     with get_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE email = %s AND deleted_at IS NULL",
+                "SELECT * FROM users WHERE email = %s",
                 (email,),
             )
             return cursor.fetchone()
@@ -51,7 +51,7 @@ def buscar_usuario_por_id(user_id: int):
     with get_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT id, name, email, level, total_points, created_at FROM users WHERE id = %s AND deleted_at IS NULL",
+                "SELECT id, name, email, created_at FROM users WHERE id = %s",
                 (user_id,),
             )
             return cursor.fetchone()

@@ -52,8 +52,6 @@ def login():
             "id": user["id"],
             "name": user["name"],
             "email": user["email"],
-            "level": user["level"],
-            "total_points": user["total_points"],
         },
     })
 
