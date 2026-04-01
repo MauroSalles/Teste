@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Pro — Sistema de Gestão Inteligente</title>
+  <style>
+    /* ── CSS Variables ────────────────────────────────────────────────── */
+    :root {
+      --bg: #0d0d0d;
+      --bg-card: #111111;
+      --bg-card-hover: #161616;
+      --green: #00ff41;
+      --green-dim: #00cc33;
+      --green-glow: rgba(0, 255, 65, 0.35);
+      --cyan: #00eeff;
+      --text: #e0e0e0;
+      --text-muted: #888;
+      --border: rgba(0, 255, 65, 0.25);
+      --font: "Courier New", Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Navbar ───────────────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13, 13, 13, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(6px);
+    }
+    .nav-logo { color: var(--green); font-size: 1.1rem; font-weight: bold; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+
+    /* ── Hero ─────────────────────────────────────────────────────────── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 20px 60px;
+      position: relative;
+    }
+
+    /* Animated ice-cream cone — pure CSS */
+    .icecream {
+      position: relative;
+      width: 80px;
+      height: 120px;
+      margin-bottom: 32px;
+      animation: float 3s ease-in-out infinite;
+    }
+    /* Cone */
+    .icecream .cone {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 28px solid transparent;
+      border-right: 28px solid transparent;
+      border-top: 60px solid #c8960c;
+    }
+    /* Scoop 1 */
+    .icecream .scoop1 {
+      position: absolute;
+      bottom: 52px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50% 50% 40% 40%;
+      background: radial-gradient(circle at 35% 35%, #ff9ebc, #ff4d8f);
+      box-shadow: 0 0 12px rgba(255, 77, 143, 0.6);
+      animation: melt 3s ease-in-out infinite;
+    }
+    /* Scoop 2 */
+    .icecream .scoop2 {
+      position: absolute;
+      bottom: 92px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50% 50% 40% 40%;
+      background: radial-gradient(circle at 35% 35%, #a8f5a2, #00cc33);
+      box-shadow: 0 0 12px rgba(0, 204, 51, 0.5);
+      animation: melt 3s ease-in-out infinite 0.3s;
+    }
+    /* Drip */
+    .icecream .drip {
+      position: absolute;
+      bottom: 48px;
+      left: calc(50% + 10px);
+      width: 8px;
+      height: 20px;
+      border-radius: 0 0 6px 6px;
+      background: #ff4d8f;
+      transform-origin: top center;
+      animation: drip 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    @keyframes melt {
+      0%, 100% { border-radius: 50% 50% 40% 40%; }
+      50%       { border-radius: 50% 50% 55% 55%; }
+    }
+    @keyframes drip {
+      0%        { height: 8px;  opacity: 0; }
+      30%       { height: 20px; opacity: 1; }
+      70%       { height: 26px; opacity: 1; }
+      100%      { height: 8px;  opacity: 0; }
+    }
+
+    /* Blinking cursor behind heading */
+    .hero-tag {
+      color: var(--green);
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green-glow);
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    /* ── CTA Buttons ──────────────────────────────────────────────────── */
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 12px 28px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: #000;
+      border: none;
+      box-shadow: 0 0 16px var(--green-glow);
+    }
+    .btn-primary:hover {
+      background: #fff;
+      box-shadow: 0 0 24px rgba(0, 255, 65, 0.7);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--green);
+      border: 1px solid var(--green);
+    }
+    .btn-secondary:hover {
+      background: rgba(0, 255, 65, 0.08);
+      box-shadow: 0 0 12px var(--green-glow);
+      transform: translateY(-2px);
+    }
+
+    /* ── Divider ──────────────────────────────────────────────────────── */
+    .divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      margin: 0 auto 60px;
+    }
+
+    /* ── Feature Cards ────────────────────────────────────────────────── */
+    .features {
+      padding: 0 20px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      color: var(--green);
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      transition: all 0.25s;
+      cursor: default;
+    }
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow);
+      transform: translateY(-4px);
+    }
+    .card-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
+    .card h3 {
+      color: var(--green);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    .card p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; }
+
+    /* ── Stack Section ────────────────────────────────────────────────── */
+    .stack {
+      padding: 0 20px 80px;
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .badge {
+      padding: 6px 14px;
+      border: 1px solid var(--green-dim);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: var(--green-dim);
+      background: rgba(0, 255, 65, 0.05);
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 32px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.8;
+    }
+    footer a { color: var(--green); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ───────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .nav-links { gap: 14px; }
+      .hero { padding: 50px 16px 40px; }
+      .features, .stack { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────── -->
+  <nav>
+    <span class="nav-logo">🍦 Gelateria Pro</span>
+    <div class="nav-links">
+      <a href="status.html">Status</a>
+      <a href="index.html">Terminal</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <!-- Pure-CSS animated ice-cream -->
+    <div class="icecream" aria-hidden="true">
+      <div class="scoop2"></div>
+      <div class="scoop1"></div>
+      <div class="drip"></div>
+      <div class="cone"></div>
+    </div>
+
+    <p class="hero-tag">Projeto Integrador 2026</p>
+    <h1>🍦 Gelateria Pro<br>Sistema de Gestão Inteligente</h1>
+    <p>
+      Plataforma full-stack para gestão de gelateria em tempo real —
+      terminal web, dashboard analítico, pagamentos, IA e fidelidade,
+      tudo em uma arquitetura pronta para produção.
+    </p>
+
+    <div class="cta-group">
+      <a href="index.html"    class="btn btn-primary">⌨ Acessar Terminal</a>
+      <a href="dashboard.html" class="btn btn-secondary">📊 Ver Dashboard</a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── Feature Cards ───────────────────────────────────────────────── -->
+  <section class="features">
+    <p class="section-title">// funcionalidades</p>
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">⌨</span>
+        <h3>Terminal CMD</h3>
+        <p>Interface web tipo CLI com histórico, autocomplete e command palette (Ctrl+K).</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">📊</span>
+        <h3>Dashboard Real-time</h3>
+        <p>Painel admin com gráficos, alertas de estoque e métricas de vendas ao vivo.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">💳</span>
+        <h3>Pagamentos</h3>
+        <p>Integração Stripe e PIX com webhook, QR code dinâmico e recibo automático.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🤖</span>
+        <h3>Inteligência Artificial</h3>
+        <p>Chatbot GPT-4, recomendações personalizadas, análise de sentimento e churn.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎯</span>
+        <h3>Loyalty & Fidelidade</h3>
+        <p>Cupons com proteção de lucro, referral 3-tier e gamificação com badges.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stack Section ───────────────────────────────────────────────── -->
+  <section class="stack">
+    <p class="section-title">// stack tecnológico</p>
+    <div class="badges">
+      <span class="badge">Python 3.12</span>
+      <span class="badge">Flask 3.x</span>
+      <span class="badge">PostgreSQL 16</span>
+      <span class="badge">Socket.IO</span>
+      <span class="badge">JWT Auth</span>
+      <span class="badge">Stripe</span>
+      <span class="badge">OpenAI GPT-4</span>
+      <span class="badge">SendGrid</span>
+      <span class="badge">Docker</span>
+      <span class="badge">Render.com</span>
+      <span class="badge">Vercel</span>
+      <span class="badge">GitHub Actions CI/CD</span>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────── -->
+  <footer>
+    <p>Projeto Integrador 2026 — Desenvolvido com Python + Flask + PostgreSQL</p>
+    <p>
+      <a href="https://github.com/MauroSalles/Teste" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="status.html">Status do Sistema</a>
+      &nbsp;·&nbsp;
+      <a href="dashboard.html">Dashboard</a>
+    </p>
+  </footer>
+
+</body>
+</html>
