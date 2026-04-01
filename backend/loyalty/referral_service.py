@@ -9,6 +9,9 @@ from backend.database import get_db
 logger = logging.getLogger(__name__)
 
 
+_MAX_CODE_GENERATION_ATTEMPTS = 10
+
+
 def _random_suffix(length=5):
     return "".join(random.choices(string.ascii_uppercase, k=length))
 
@@ -26,7 +29,7 @@ def get_or_create_referral_code(user_id):
                 return dict(row)
 
             code = f"ACAI-{_random_suffix()}"
-            for _ in range(10):
+            for _ in range(_MAX_CODE_GENERATION_ATTEMPTS):
                 cur.execute(
                     "SELECT id FROM referral_codes WHERE code = %s",
                     (code,),

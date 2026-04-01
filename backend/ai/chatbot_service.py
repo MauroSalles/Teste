@@ -14,6 +14,8 @@ _MENU = {
     "limão": "R$ 9,00",
 }
 
+_OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
+
 _PREDEFINED = [
     (r"(oi|olá|ola|bom dia|boa tarde|boa noite|hey|hi)", "Olá! Bem-vindo à Gelateria Pro! 🍦 Como posso te ajudar?"),
     (r"(sabor|sabores|cardápio|cardapio|menu|opções|opcoes)", f"Nossos sabores: {', '.join(f'{k.title()} ({v})' for k, v in _MENU.items())} 😋"),
@@ -61,7 +63,7 @@ def _openai_chat(message, context, api_key):
     messages.append({"role": "user", "content": message})
 
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=_OPENAI_MODEL,
         messages=messages,
         max_tokens=300,
     )

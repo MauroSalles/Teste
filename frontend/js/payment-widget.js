@@ -12,6 +12,9 @@
       : ''
   );
 
+  const MAX_POLL_ATTEMPTS = 12;
+  const POLL_INTERVAL_MS = 5000;
+
   // ── Inject styles ─────────────────────────────────────────────────────────
   const style = document.createElement('style');
   style.textContent = `
@@ -137,7 +140,7 @@
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
-      if (attempts > 12) { clearInterval(interval); return; }
+      if (attempts > MAX_POLL_ATTEMPTS) { clearInterval(interval); return; }
       try {
         const res = await fetch(`${API_URL}/api/payments/pix/status/${txid}`, {
           headers: { 'Authorization': `Bearer ${token}` },
@@ -148,7 +151,7 @@
           _showSuccess();
         }
       } catch (_) {}
-    }, 5000);
+    }, POLL_INTERVAL_MS);
   }
 
   function _showSuccess() {
