@@ -8,6 +8,11 @@ from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
 from backend.routes.api_routes import api_bp
 from backend.routes.auth_routes import auth_bp
+from backend.routes.daily_routes import daily_bp
+from backend.routes.clube_routes import clube_bp
+from backend.routes.feed_routes import feed_bp
+from backend.routes.gelinho_routes import gelinho_bp
+from backend.routes.presence_routes import presence_bp
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +42,11 @@ def create_app():
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(daily_bp)
+    app.register_blueprint(clube_bp)
+    app.register_blueprint(feed_bp)
+    app.register_blueprint(gelinho_bp)
+    app.register_blueprint(presence_bp)
 
     return app
 

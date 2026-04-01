@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feed Social — Gelateria Pro 🍦</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    /* Stories */
+    .stories-bar {
+      display: flex;
+      gap: 14px;
+      padding: 18px 20px 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .stories-bar::-webkit-scrollbar { display: none; }
+    .story-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .story-ring {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, #4fc3f7, #a78bfa);
+    }
+    .story-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #1e2939;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      border: 2px solid #0d1117;
+    }
+    .story-name { font-size: 11px; color: #aaa; max-width: 56px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Layout */
+    .feed-layout {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* New post */
+    .new-post-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .new-post-box textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #e0e0e0;
+      font-size: 15px;
+      resize: none;
+      outline: none;
+      min-height: 56px;
+      font-family: inherit;
+    }
+    .new-post-box textarea::placeholder { color: #555; }
+    .new-post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .emoji-picker { font-size: 20px; cursor: pointer; color: #aaa; }
+    .btn-post {
+      background: #4fc3f7;
+      color: #0d1117;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-post:hover { opacity: .85; }
+
+    /* Post card */
+    .post-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+      transition: border-color .2s;
+    }
+    .post-card:hover { border-color: rgba(255,255,255,0.14); }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .post-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4fc3f7, #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .post-author { font-weight: 700; font-size: 15px; }
+    .post-meta { font-size: 12px; color: #666; }
+    .post-tipo {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(79,195,247,0.12);
+      color: #4fc3f7;
+    }
+    .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
+    .post-actions {
+      display: flex;
+      gap: 20px;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: color .2s, background .2s;
+    }
+    .action-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .action-btn.liked { color: #ef4444; }
+    .action-btn.liked:hover { color: #ef4444; }
+
+    /* Comments */
+    .comments-section { margin-top: 14px; display: none; }
+    .comment-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .comment-input {
+      flex: 1;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .comment-input::placeholder { color: #555; }
+    .btn-comment {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .comment-item {
+      padding: 8px 0;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+    }
+    .comment-author { font-weight: 600; color: #4fc3f7; margin-right: 6px; }
+
+    /* Load more */
+    .btn-load-more {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #aaa;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 4px;
+    }
+    .btn-load-more:hover { background: rgba(255,255,255,0.09); }
+
+    /* Loader */
+    .loader {
+      text-align: center;
+      padding: 40px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    /* Real-time badge */
+    #live-badge {
+      display: none;
+      background: #22c55e;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin: 0 auto 16px;
+      text-align: center;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .7; }
+    }
+  </style>
+</head>
+<body>
+  <script src="js/navbar.js"></script>
+  <script src="js/toast.js"></script>
+
+  <!-- Stories (recent check-ins today) -->
+  <div class="stories-bar" id="stories-bar">
+    <div class="story-item">
+      <div class="story-ring">
+        <div class="story-avatar">➕</div>
+      </div>
+      <span class="story-name">Seu story</span>
+    </div>
+  </div>
+
+  <div class="feed-layout">
+    <div id="live-badge" onclick="reloadFeed()">🔴 Novos posts — clique para atualizar</div>
+
+    <!-- New post form -->
+    <div class="new-post-box" id="new-post-box" style="display:none">
+      <textarea id="new-post-text" placeholder="Compartilhe sua experiência na Gelateria Pro... 🍦" maxlength="500"></textarea>
+      <div class="new-post-footer">
+        <span class="emoji-picker" onclick="insertEmoji()">😊</span>
+        <span id="char-counter" style="font-size:12px;color:#555">0/500</span>
+        <button class="btn-post" onclick="submitPost()">Publicar</button>
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div id="feed-container">
+      <div class="loader">Carregando feed... 🍦</div>
+    </div>
+
+    <button class="btn-load-more" id="btn-load-more" style="display:none" onclick="loadMore()">
+      Carregar mais posts
+    </button>
+  </div>
+
+  <script src="js/gelinho-widget.js"></script>
+  <script>
+    const API = '';
+    let currentPage = 1;
+    let lastPostId = 0;
+
+    // Show new post form if logged in
+    const token = localStorage.getItem('token');
+    if (token) document.getElementById('new-post-box').style.display = 'block';
+
+    // Char counter
+    document.getElementById('new-post-text').addEventListener('input', (e) => {
+      document.getElementById('char-counter').textContent = `${e.target.value.length}/500`;
+    });
+
+    // Emoji picker (simple)
+    const EMOJIS = ['🍦','🎉','🔥','💎','❤️','😋','🍫','🍓','🏆','✨'];
+    let emojiIdx = 0;
+    function insertEmoji() {
+      const ta = document.getElementById('new-post-text');
+      ta.value += EMOJIS[emojiIdx % EMOJIS.length];
+      emojiIdx++;
+      ta.dispatchEvent(new Event('input'));
+    }
+
+    function relTime(isoStr) {
+      const d = new Date(isoStr);
+      const diff = (Date.now() - d) / 1000;
+      if (diff < 60) return 'agora';
+      if (diff < 3600) return `${Math.floor(diff/60)}min`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    function tipoLabel(tipo) {
+      const map = {manual:'Post',conquista:'Badge',streak:'Streak',primeiro_pedido:'Primeiro Pedido'};
+      return map[tipo] || tipo;
+    }
+
+    function tipoEmoji(tipo) {
+      const map = {manual:'✍️',conquista:'🏆',streak:'🔥',primeiro_pedido:'🍦'};
+      return map[tipo] || '📝';
+    }
+
+    function renderPost(p) {
+      return `
+        <div class="post-card" id="post-${p.id}">
+          <div class="post-header">
+            <div class="post-avatar">${tipoEmoji(p.tipo)}</div>
+            <div>
+              <div class="post-author">${p.autor || 'Anônimo'}</div>
+              <div class="post-meta">${relTime(p.created_at)}</div>
+            </div>
+            <span class="post-tipo">${tipoLabel(p.tipo)}</span>
+          </div>
+          <div class="post-content">${p.conteudo}</div>
+          <div class="post-actions">
+            <button class="action-btn" onclick="curtir(${p.id}, this)">
+              🤍 <span>${p.curtidas || 0}</span>
+            </button>
+            <button class="action-btn" onclick="toggleComments(${p.id})">
+              💬 <span>${p.comentarios || 0}</span>
+            </button>
+          </div>
+          <div class="comments-section" id="comments-${p.id}">
+            <div class="comment-input-row">
+              <input class="comment-input" id="comment-input-${p.id}" placeholder="Escreva um comentário...">
+              <button class="btn-comment" onclick="enviarComentario(${p.id})">✓</button>
+            </div>
+            <div id="comment-list-${p.id}"></div>
+          </div>
+        </div>`;
+    }
+
+    async function loadFeed(page = 1, append = false) {
+      try {
+        const r = await fetch(`${API}/api/feed?page=${page}`);
+        const d = await r.json();
+        const container = document.getElementById('feed-container');
+        if (!append) container.innerHTML = '';
+
+        if (!d.posts || d.posts.length === 0) {
+          if (!append) container.innerHTML = '<div class="loader">Nenhum post ainda. Seja o primeiro! 🍦</div>';
+          document.getElementById('btn-load-more').style.display = 'none';
+          return;
+        }
+
+        d.posts.forEach(p => {
+          container.insertAdjacentHTML('beforeend', renderPost(p));
+          if (p.id > lastPostId) lastPostId = p.id;
+        });
+
+        // Load stories
+        if (page === 1) loadStories(d.posts);
+
+        document.getElementById('btn-load-more').style.display = d.posts.length === 20 ? 'block' : 'none';
+      } catch {
+        document.getElementById('feed-container').innerHTML = '<div class="loader">Erro ao carregar feed. Tente novamente.</div>';
+      }
+    }
+
+    function loadStories(posts) {
+      const bar = document.getElementById('stories-bar');
+      const seen = new Set();
+      posts.slice(0, 5).forEach(p => {
+        if (!seen.has(p.autor) && p.autor) {
+          seen.add(p.autor);
+          const item = document.createElement('div');
+          item.className = 'story-item';
+          item.innerHTML = `
+            <div class="story-ring">
+              <div class="story-avatar">${p.autor[0].toUpperCase()}</div>
+            </div>
+            <span class="story-name">${p.autor.split(' ')[0]}</span>`;
+          bar.appendChild(item);
+        }
+      });
+    }
+
+    function loadMore() {
+      currentPage++;
+      loadFeed(currentPage, true);
+    }
+
+    function reloadFeed() {
+      currentPage = 1;
+      loadFeed(1, false);
+      document.getElementById('live-badge').style.display = 'none';
+    }
+
+    async function submitPost() {
+      const text = document.getElementById('new-post-text').value.trim();
+      if (!text) return gpToast.error('Escreva algo antes de publicar!');
+      if (!token) return gpToast.error('Faça login para publicar!');
+
+      try {
+        const r = await fetch(`${API}/api/feed/post`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+          body: JSON.stringify({conteudo: text})
+        });
+        if (r.ok) {
+          document.getElementById('new-post-text').value = '';
+          document.getElementById('char-counter').textContent = '0/500';
+          gpToast.success('Post publicado! 🎉');
+          reloadFeed();
+        } else {
+          gpToast.error('Erro ao publicar post');
+        }
+      } catch {
+        gpToast.error('Erro de conexão');
+      }
+    }
+
+    async function curtir(postId, btn) {
+      if (!token) return gpToast.info('Faça login para curtir! 💙');
+      btn.classList.toggle('liked');
+      const icon = btn.classList.contains('liked') ? '❤️' : '🤍';
+      try {
+        const r = await fetch(`${API}/api/feed/${postId}/curtir`, {
+          method: 'POST',
+          headers: {Authorization:`Bearer ${token}`}
+        });
+        if (r.ok) {
+          const d = await r.json();
+          btn.innerHTML = `${icon} <span>${d.curtidas}</span>`;
+        }
+      } catch {}
+    }
+
+    function toggleComments(postId) {
+      const section = document.getElementById(`comments-${postId}`);
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function enviarComentario(postId) {
+      const input = document.getElementById(`comment-input-${postId}`);
+      const texto = input.value.trim();
+      if (!texto) return;
+      if (!token) return gpToast.info('Faça login para comentar!');
+
+      try {
+        const r = await fetch(`${API}/api/feed/${postId}/comentar`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+          body: JSON.stringify({texto})
+        });
+        if (r.ok) {
+          const list = document.getElementById(`comment-list-${postId}`);
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const item = document.createElement('div');
+          item.className = 'comment-item';
+          const author = document.createElement('span');
+          author.className = 'comment-author';
+          author.textContent = user.name || 'Você';
+          item.appendChild(author);
+          item.appendChild(document.createTextNode(texto));
+          list.appendChild(item);
+          input.value = '';
+        }
+      } catch {}
+    }
+
+    // Poll for new posts every 30s (simulated real-time)
+    setInterval(async () => {
+      try {
+        const r = await fetch(`${API}/api/feed?page=1`);
+        const d = await r.json();
+        if (d.posts && d.posts.length > 0 && d.posts[0].id > lastPostId) {
+          document.getElementById('live-badge').style.display = 'block';
+          if (window.gpNavbar) window.gpNavbar.showNotificationBadge();
+        }
+      } catch {}
+    }, 30000);
+
+    // Initial load
+    loadFeed(1);
+  </script>
+</body>
+</html>
