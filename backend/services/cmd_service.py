@@ -34,8 +34,12 @@ def processar_comando(comando):
             "\n"
             "  Sistema:\n"
             "    status                            → resumo geral do sistema\n"
+            "    sabor do dia                      → veja o sabor especial de hoje 🍦\n"
             "    limpar                            → limpa a tela\n"
             "    ajuda                             → exibe este menu\n"
+            "\n"
+            "  Easter egg:\n"
+            "    matrix                            → 🕶️\n"
         )
 
     # ── Sabores ──────────────────────────────────────────────────────────────
@@ -210,6 +214,23 @@ def processar_comando(comando):
             nomes = ", ".join(i["nome"] for i in sem_estoque)
             linhas.append(f"    ⚠ {nomes}")
         return "\n".join(linhas)
+
+    elif comando == "sabor do dia":
+        import hashlib
+        from datetime import date
+        sabores = listar_sabores()
+        if not sabores:
+            return "Nenhum sabor cadastrado ainda."
+        day_seed = int(hashlib.md5(str(date.today()).encode()).hexdigest(), 16)
+        escolhido = sabores[day_seed % len(sabores)]
+        return (
+            f"🍦 Sabor do Dia — {date.today().strftime('%d/%m/%Y')}\n"
+            f"  {escolhido['nome']} — R$ {float(escolhido['preco']):.2f}\n"
+            f"Aproveite o sabor especial de hoje!"
+        )
+
+    elif comando == "matrix":
+        return "__MATRIX__"
 
     elif comando == "limpar":
         return "__LIMPAR__"
