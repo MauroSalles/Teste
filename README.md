@@ -1,5 +1,11 @@
 # 🍦 Gelateria Sistema — Projeto Integrador
 
+![CI](https://github.com/MauroSalles/Teste/actions/workflows/deploy.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Flask](https://img.shields.io/badge/flask-3.x-green)
+![PostgreSQL](https://img.shields.io/badge/postgresql-16-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, dashboard administrativo, autenticação JWT e sistema de fidelidade.
 
 **Stack:** Python/Flask · PostgreSQL · HTML/CSS/JS (Vanilla)  
@@ -48,8 +54,10 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 │   └── services/
 │       └── cmd_service.py        # Command parser
 ├── frontend/
+│   ├── landing.html              # Landing page profissional (entry point)
 │   ├── index.html                # Terminal CMD web UI
 │   ├── dashboard.html            # Admin dashboard
+│   ├── status.html               # Página pública de status do sistema
 │   ├── script.js                 # Terminal logic
 │   ├── style.css                 # Dark terminal theme + CSS variables
 │   ├── manifest.json             # PWA manifest
@@ -66,6 +74,9 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 ├── .github/workflows/
 │   ├── ci.yml                    # Lint + tests
 │   └── deploy.yml                # Deploy to Render
+├── scripts/
+│   └── cleanup_prs.py            # Documents discarded PRs (#1,13,14,15,17,18,23)
+├── Makefile                      # Dev helpers: install/dev/test/lint/docker-up…
 ├── Dockerfile
 ├── docker-compose.yml
 ├── render.yaml
@@ -174,7 +185,8 @@ FLASK_ENV=development PYTHONPATH=. python backend/app.py
 ### Outros
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/health` | Health check |
+| GET | `/health` | Health check simples |
+| GET | `/health/detailed` | Health check detalhado (versão, uptime, serviços) |
 | POST | `/cmd` | Interface CMD `{command: "listar sabores"}` |
 
 ---

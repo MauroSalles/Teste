@@ -33,7 +33,8 @@ def processar_comando(comando):
             "    reduzir estoque <sabor> <qtd>     → reduz o estoque de um sabor\n"
             "\n"
             "  Sistema:\n"
-            "    status                            → resumo geral do sistema\n"
+            "    status                            → resumo dos serviços em execução\n"
+            "    versao                            → versão do sistema e data de build\n"
             "    limpar                            → limpa a tela\n"
             "    ajuda                             → exibe este menu\n"
         )
@@ -210,6 +211,17 @@ def processar_comando(comando):
             nomes = ", ".join(i["nome"] for i in sem_estoque)
             linhas.append(f"    ⚠ {nomes}")
         return "\n".join(linhas)
+
+    elif comando == "versao":
+        from backend.routes.health_routes import APP_VERSION
+        from datetime import datetime, timezone
+        build_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        return (
+            f"Gelateria Pro v{APP_VERSION}\n"
+            f"Data atual    : {build_date}\n"
+            "Stack         : Python/Flask + PostgreSQL\n"
+            "Deploy        : Render.com + Vercel"
+        )
 
     elif comando == "limpar":
         return "__LIMPAR__"

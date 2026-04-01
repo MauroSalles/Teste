@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Pro — Status do Sistema</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --bg-card: #111111;
+      --green: #00ff41;
+      --green-glow: rgba(0, 255, 65, 0.3);
+      --yellow: #ffcc00;
+      --red: #ff4444;
+      --text: #e0e0e0;
+      --text-muted: #888;
+      --border: rgba(0, 255, 65, 0.2);
+      --font: "Courier New", Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ─────────────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,13,0.95);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(6px);
+    }
+    .nav-logo { color: var(--green); font-size: 1.05rem; font-weight: bold; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+
+    /* ── Main ───────────────────────────────────────────────────────── */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+    }
+
+    h1 {
+      color: var(--green);
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      text-shadow: 0 0 16px var(--green-glow);
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 40px;
+    }
+    #last-update {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* ── Overall banner ─────────────────────────────────────────────── */
+    #overall {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      margin-bottom: 32px;
+      font-size: 1.05rem;
+      transition: border-color 0.3s;
+    }
+    #overall.ok     { border-color: var(--green); }
+    #overall.warn   { border-color: var(--yellow); }
+    #overall.error  { border-color: var(--red); }
+
+    /* ── Service cards ──────────────────────────────────────────────── */
+    .section-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    #services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .svc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 18px;
+      transition: border-color 0.3s;
+    }
+    .svc-card.ok   { border-color: rgba(0,255,65,0.4); }
+    .svc-card.warn { border-color: rgba(255,204,0,0.5); }
+    .svc-card.err  { border-color: rgba(255,68,68,0.5); }
+
+    .svc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .svc-name   { font-size: 0.9rem; color: var(--green); }
+    .svc-dot    { font-size: 1rem; }
+    .svc-status { color: var(--text-muted); font-size: 0.78rem; }
+
+    /* ── Meta info ──────────────────────────────────────────────────── */
+    #meta {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .meta-item label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .meta-item span { color: var(--green); font-size: 0.9rem; }
+
+    /* ── Loading / Error states ─────────────────────────────────────── */
+    #loading-msg {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 40px 0;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      nav { padding: 14px 16px; }
+      main { padding: 40px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────── -->
+  <nav>
+    <span class="nav-logo">🍦 Gelateria Pro</span>
+    <div class="nav-links">
+      <a href="landing.html">Home</a>
+      <a href="index.html">Terminal</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ────────────────────────────────────────────────── -->
+  <main>
+    <h1>Status do Sistema</h1>
+    <p class="subtitle">
+      Monitoramento em tempo real · atualização automática a cada 30 segundos
+      <br><span id="last-update"></span>
+    </p>
+
+    <div id="loading-msg">Carregando status...</div>
+
+    <!-- Overall status banner (hidden until data loaded) -->
+    <div id="overall" style="display:none"></div>
+
+    <!-- Per-service grid (hidden until data loaded) -->
+    <p class="section-label" id="svc-label" style="display:none">// serviços</p>
+    <div id="services-grid"></div>
+
+    <!-- Meta info (hidden until data loaded) -->
+    <div id="meta" style="display:none">
+      <div class="meta-item">
+        <label>Versão</label>
+        <span id="meta-version">—</span>
+      </div>
+      <div class="meta-item">
+        <label>Uptime</label>
+        <span id="meta-uptime">—</span>
+      </div>
+      <div class="meta-item">
+        <label>Banco de Dados</label>
+        <span id="meta-db">—</span>
+      </div>
+      <div class="meta-item">
+        <label>Timestamp</label>
+        <span id="meta-ts">—</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Resolve API base URL — supports both same-origin and cross-origin backends.
+    const API_BASE = (() => {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:5000';
+      }
+      // In production the backend URL is injected by Vercel's env or falls back to same origin.
+      return window.ENV_API_URL || '';
+    })();
+
+    const SERVICE_LABELS = {
+      stripe:   '💳 Stripe',
+      openai:   '🤖 OpenAI',
+      sendgrid: '📧 SendGrid',
+      socketio: '⚡ Socket.IO',
+    };
+
+    function dot(status) {
+      if (status === 'active' || status === 'configured' || status === 'connected') return '🟢';
+      if (status === 'not_configured') return '🟡';
+      return '🔴';
+    }
+
+    function cardClass(status) {
+      if (status === 'active' || status === 'configured' || status === 'connected') return 'ok';
+      if (status === 'not_configured') return 'warn';
+      return 'err';
+    }
+
+    function formatUptime(seconds) {
+      if (seconds == null) return '—';
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      const parts = [];
+      if (d > 0) parts.push(`${d}d`);
+      if (h > 0) parts.push(`${h}h`);
+      if (m > 0) parts.push(`${m}m`);
+      parts.push(`${s}s`);
+      return parts.join(' ');
+    }
+
+    function render(data) {
+      document.getElementById('loading-msg').style.display = 'none';
+
+      // Overall banner
+      const overall = document.getElementById('overall');
+      overall.style.display = 'flex';
+      const isOk = data.status === 'healthy';
+      overall.className = isOk ? 'ok' : 'error';
+      overall.innerHTML = `
+        <span style="font-size:1.4rem">${isOk ? '🟢' : '🔴'}</span>
+        <span style="color:${isOk ? 'var(--green)' : 'var(--red)'}">
+          ${isOk ? 'Todos os sistemas operacionais' : 'Degradação detectada'}
+        </span>
+      `;
+
+      // Services grid
+      const grid = document.getElementById('services-grid');
+      grid.innerHTML = '';
+      document.getElementById('svc-label').style.display = 'block';
+
+      const services = data.services || {};
+      for (const [key, status] of Object.entries(services)) {
+        const label = SERVICE_LABELS[key] || key;
+        const d     = dot(status);
+        const cls   = cardClass(status);
+        const card  = document.createElement('div');
+        card.className = `svc-card ${cls}`;
+        card.innerHTML = `
+          <div class="svc-header">
+            <span class="svc-name">${label}</span>
+            <span class="svc-dot">${d}</span>
+          </div>
+          <div class="svc-status">${status}</div>
+        `;
+        grid.appendChild(card);
+      }
+
+      // Meta info
+      const meta = document.getElementById('meta');
+      meta.style.display = 'flex';
+      document.getElementById('meta-version').textContent = data.version || '—';
+      document.getElementById('meta-uptime').textContent  = formatUptime(data.uptime_seconds);
+      document.getElementById('meta-db').textContent      = data.database  || '—';
+      const ts = data.timestamp ? new Date(data.timestamp).toLocaleString('pt-BR') : '—';
+      document.getElementById('meta-ts').textContent      = ts;
+
+      // Last-update tag
+      document.getElementById('last-update').textContent =
+        'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
+    }
+
+    function renderError(err) {
+      document.getElementById('loading-msg').style.display = 'none';
+      const overall = document.getElementById('overall');
+      overall.style.display = 'flex';
+      overall.className = 'error';
+      overall.innerHTML = `
+        <span style="font-size:1.4rem">🔴</span>
+        <span style="color:var(--red)">Não foi possível contatar o backend — ${err}</span>
+      `;
+      document.getElementById('last-update').textContent =
+        'Última tentativa: ' + new Date().toLocaleTimeString('pt-BR');
+    }
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/health/detailed`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        renderError(err.message);
+      }
+    }
+
+    // Initial fetch + auto-refresh every 30 seconds
+    fetchStatus();
+    setInterval(fetchStatus, 30000);
+  </script>
+
+</body>
+</html>
