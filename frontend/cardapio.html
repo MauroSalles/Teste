@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Cardápio Digital — Gelateria Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 0; }
+    #page { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--bg-header); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
+    .page-header h1 { font-size: 1.2em; }
+    .nav-links { display: flex; gap: 10px; align-items: center; }
+    .nav-links a { color: var(--text-primary); text-decoration: none; font-size: 0.85em; border: 1px solid var(--border-color); padding: 3px 10px; border-radius: 4px; transition: background 0.2s, color 0.2s; }
+    .nav-links a:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Filters */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85em; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Grid */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .flavor-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; animation: fadeIn 0.4s ease both; }
+    .flavor-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px var(--shadow-color); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .card-img { width: 100%; height: 120px; object-fit: cover; display: block; background: var(--bg-header); }
+    .card-body { padding: 12px; }
+    .card-nome { font-size: 1em; font-weight: bold; margin-bottom: 4px; }
+    .card-preco { color: var(--text-muted); font-size: 0.9em; }
+    .card-tag { display: inline-block; font-size: 0.72em; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 12px; margin-top: 6px; }
+    .card-tag.popular { border-color: #ffd700; color: #ffd700; }
+    .card-tag.novidade { border-color: #00bcd4; color: #00bcd4; }
+    .stars { color: #ffd700; font-size: 0.85em; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; width: 90%; max-width: 540px; max-height: 85vh; overflow-y: auto; padding: 24px; position: relative; }
+    .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-primary); font-size: 1.4em; cursor: pointer; }
+    .modal h2 { margin-bottom: 8px; }
+    .nutri-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .nutri-item { background: var(--bg-header); border-radius: 6px; padding: 8px; text-align: center; font-size: 0.82em; }
+    .nutri-val { font-size: 1.2em; font-weight: bold; display: block; }
+    .review-form { margin-top: 16px; }
+    .star-select { display: flex; gap: 6px; margin: 8px 0; font-size: 1.6em; cursor: pointer; }
+    .star-select span.active { color: #ffd700; }
+    .star-select span { color: var(--text-muted); transition: color 0.1s; }
+    textarea.review-txt { width: 100%; background: var(--bg-header); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; border-radius: 6px; font-family: inherit; font-size: 0.9em; resize: vertical; min-height: 70px; }
+    .btn-primary { background: var(--btn-hover-bg); color: var(--btn-hover-text); border: none; padding: 8px 20px; border-radius: 6px; font-family: inherit; cursor: pointer; font-size: 0.9em; margin-top: 8px; }
+    .btn-primary:hover { opacity: 0.85; }
+    .reviews-list { margin-top: 12px; max-height: 160px; overflow-y: auto; }
+    .review-item { border-top: 1px solid var(--border-color); padding: 8px 0; font-size: 0.85em; }
+    .review-sent { font-size: 0.78em; color: var(--text-muted); }
+    #loading { text-align: center; padding: 40px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div id="page">
+  <header class="page-header">
+    <h1>🍦 Cardápio Digital</h1>
+    <div class="nav-links">
+      <a href="index.html">⬅ Terminal</a>
+      <a href="delivery.html">🛵 Delivery</a>
+      <a href="analytics.html">📊 Analytics</a>
+      <button id="theme-toggle" onclick="toggleTheme()" style="background:transparent;border:1px solid var(--border-color);color:var(--text-primary);padding:3px 10px;cursor:pointer;border-radius:4px;font-family:inherit;">🌙</button>
+    </div>
+  </header>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('todos', this)">🍨 Todos</button>
+    <button class="filter-btn" onclick="setFilter('popular', this)">⭐ Mais Pedidos</button>
+    <button class="filter-btn" onclick="setFilter('barato', this)">💰 Mais Baratos</button>
+    <button class="filter-btn" onclick="setFilter('nota', this)">🏆 Melhor Avaliados</button>
+    <button class="filter-btn" onclick="setFilter('novidade', this)">✨ Novidades</button>
+  </div>
+
+  <div id="loading">Carregando cardápio...</div>
+  <div class="card-grid" id="card-grid" style="display:none;"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalIf(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="m-nome"></h2>
+    <p id="m-preco" style="color:var(--text-muted);margin-bottom:8px;"></p>
+    <p id="m-desc" style="font-size:0.9em;margin-bottom:12px;"></p>
+    <h3 style="font-size:0.95em;margin-bottom:6px;">Informações Nutricionais <small style="font-size:0.78em;color:var(--text-muted)">(por 100g)</small></h3>
+    <div class="nutri-grid" id="m-nutri"></div>
+    <h3 style="font-size:0.95em;margin:14px 0 6px;">Avaliações</h3>
+    <div class="reviews-list" id="m-reviews"><em style="color:var(--text-muted)">Sem avaliações ainda.</em></div>
+    <div class="review-form">
+      <p style="font-size:0.9em;margin-bottom:4px;"><strong>Avaliar este sabor:</strong></p>
+      <div class="star-select" id="star-select">
+        <span onclick="setStar(1)">★</span><span onclick="setStar(2)">★</span><span onclick="setStar(3)">★</span><span onclick="setStar(4)">★</span><span onclick="setStar(5)">★</span>
+      </div>
+      <textarea class="review-txt" id="review-txt" placeholder="Seu comentário (opcional)..."></textarea>
+      <button class="btn-primary" onclick="submitReview()">Enviar Avaliação</button>
+    </div>
+    <button class="btn-primary" style="margin-top:16px;width:100%;font-size:1em;" onclick="window.location.href='delivery.html'">🛵 Pedir Agora</button>
+  </div>
+</div>
+
+<script>
+const API = window.API_URL || "http://localhost:5000";
+let allFlavors = [];
+let currentFilter = "todos";
+let currentSaborId = null;
+let selectedStar = 0;
+
+// Theme
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  document.getElementById("theme-toggle").textContent = t === "light" ? "🌞" : "🌙";
+  localStorage.setItem("theme", t);
+}
+function toggleTheme() {
+  applyTheme(document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light");
+}
+applyTheme(localStorage.getItem("theme") || "dark");
+
+function starsHtml(n) {
+  return "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+}
+
+async function loadCardapio() {
+  try {
+    const r = await fetch(`${API}/api/cardapio`);
+    allFlavors = await r.json();
+  } catch {
+    allFlavors = [];
+  }
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("card-grid").style.display = "grid";
+  renderCards();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderCards();
+}
+
+function renderCards() {
+  let list = [...allFlavors];
+  if (currentFilter === "popular") list.sort((a,b) => b.nota_media - a.nota_media);
+  else if (currentFilter === "barato") list.sort((a,b) => a.preco - b.preco);
+  else if (currentFilter === "nota") list.sort((a,b) => b.nota_media - a.nota_media);
+  else if (currentFilter === "novidade") list = list.filter(f => f.tag === "novidade");
+
+  const grid = document.getElementById("card-grid");
+  grid.innerHTML = "";
+  list.forEach((f, i) => {
+    const card = document.createElement("div");
+    card.className = "flavor-card";
+    card.style.animationDelay = `${i * 0.05}s`;
+    card.innerHTML = `
+      <img class="card-img" src="${f.imagem_placeholder}" alt="${f.nome}" loading="lazy"/>
+      <div class="card-body">
+        <div class="card-nome">${f.nome}</div>
+        <div class="card-preco">R$ ${f.preco.toFixed(2)}</div>
+        <div class="stars">${starsHtml(f.nota_media)} <small style="color:var(--text-muted)">${f.nota_media > 0 ? f.nota_media.toFixed(1) : "Novo"}</small></div>
+        ${f.tag ? `<span class="card-tag ${f.tag}">${f.tag === "popular" ? "⭐ Popular" : "✨ Novidade"}</span>` : ""}
+      </div>`;
+    card.onclick = () => openModal(f);
+    grid.appendChild(card);
+  });
+  if (list.length === 0) grid.innerHTML = "<p style='color:var(--text-muted);padding:20px;'>Nenhum sabor encontrado.</p>";
+}
+
+async function openModal(f) {
+  currentSaborId = f.id;
+  selectedStar = 0;
+  updateStars(0);
+  document.getElementById("review-txt").value = "";
+  document.getElementById("m-nome").textContent = f.nome;
+  document.getElementById("m-preco").textContent = `R$ ${f.preco.toFixed(2)} · ${f.estoque > 0 ? "✅ Disponível" : "❌ Indisponível"}`;
+  document.getElementById("m-desc").textContent = f.descricao;
+  document.getElementById("modal-overlay").classList.add("open");
+
+  // Load nutritional info
+  try {
+    const nr = await fetch(`${API}/api/cardapio/${f.id}/nutricional`);
+    const n = await nr.json();
+    document.getElementById("m-nutri").innerHTML = `
+      <div class="nutri-item"><span class="nutri-val">${n.calorias}</span>kcal</div>
+      <div class="nutri-item"><span class="nutri-val">${n.gorduras}g</span>Gorduras</div>
+      <div class="nutri-item"><span class="nutri-val">${n.carboidratos}g</span>Carboidratos</div>
+      <div class="nutri-item"><span class="nutri-val">${n.proteinas}g</span>Proteínas</div>
+      <div class="nutri-item"><span class="nutri-val">${n.acucar}g</span>Açúcar</div>
+      <div class="nutri-item"><span class="nutri-val">${n.porcao_gramas}g</span>Porção</div>`;
+  } catch { document.getElementById("m-nutri").innerHTML = "<p style='color:var(--text-muted)'>Info não disponível.</p>"; }
+
+  // Load reviews
+  try {
+    const ar = await fetch(`${API}/api/cardapio/${f.id}/avaliacoes`);
+    const ad = await ar.json();
+    const rl = document.getElementById("m-reviews");
+    if (!ad.avaliacoes || ad.avaliacoes.length === 0) {
+      rl.innerHTML = "<em style='color:var(--text-muted)'>Sem avaliações ainda.</em>";
+    } else {
+      rl.innerHTML = ad.avaliacoes.map(a => `
+        <div class="review-item">
+          <span class="stars">${starsHtml(a.nota)}</span>
+          ${a.comentario ? `<p>${a.comentario}</p>` : ""}
+          <span class="review-sent">${sentimentIcon(a.sentimento)} ${new Date(a.created_at).toLocaleDateString("pt-BR")}</span>
+        </div>`).join("");
+    }
+  } catch {}
+}
+
+function sentimentIcon(s) { return s === "positivo" ? "😊" : s === "negativo" ? "😞" : "😐"; }
+
+function closeModal() { document.getElementById("modal-overlay").classList.remove("open"); }
+function closeModalIf(e) { if (e.target === document.getElementById("modal-overlay")) closeModal(); }
+
+function setStar(n) { selectedStar = n; updateStars(n); }
+function updateStars(n) {
+  document.querySelectorAll("#star-select span").forEach((s, i) => {
+    s.classList.toggle("active", i < n);
+  });
+}
+
+async function submitReview() {
+  if (!selectedStar) { alert("Selecione uma nota de 1 a 5 estrelas."); return; }
+  const comentario = document.getElementById("review-txt").value.trim();
+  try {
+    const r = await fetch(`${API}/api/cardapio/${currentSaborId}/avaliacao`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nota: selectedStar, comentario })
+    });
+    if (r.ok) { alert("Avaliação enviada! Obrigado 🍦"); closeModal(); }
+    else { const e = await r.json(); alert(e.error || "Erro ao enviar avaliação."); }
+  } catch { alert("Erro de conexão."); }
+}
+
+loadCardapio();
+</script>
+</body>
+</html>
