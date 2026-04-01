@@ -3,6 +3,25 @@ const API_URL = window.API_URL || "http://localhost:5000";
 const outputEl = document.getElementById("output");
 const cmdInput = document.getElementById("cmd");
 const sendBtn = document.getElementById("send-btn");
+const typingIndicator = document.getElementById("typing-indicator");
+const autocompleteHint = document.getElementById("autocomplete-hint");
+
+// ── Tab-completion corpus ────────────────────────────────────────────────────
+const COMMANDS = [
+  "ajuda", "limpar", "status",
+  "listar sabores", "listar pedidos",
+  "add sabor ", "atualizar sabor ", "remover sabor ",
+  "fazer pedido ", "ver estoque",
+  "set estoque ", "add estoque ", "reduzir estoque ",
+];
+const COMMANDS_LOWER = COMMANDS.map((c) => c.toLowerCase());
+
+function getCompletionHint(value) {
+  if (!value) return "";
+  const lower = value.toLowerCase();
+  const idx = COMMANDS_LOWER.findIndex((c) => c.startsWith(lower) && c !== lower);
+  return idx >= 0 ? COMMANDS[idx] : "";
+}
 
 // ── Command history ──────────────────────────────────────────────────────────
 const history = [];
@@ -15,7 +34,21 @@ function pushHistory(cmd) {
   historyIndex = history.length;
 }
 
+cmdInput.addEventListener("input", () => {
+  const hint = getCompletionHint(cmdInput.value.trim());
+  if (autocompleteHint) autocompleteHint.textContent = hint ? `Tab → ${hint}` : "";
+});
+
 cmdInput.addEventListener("keydown", (e) => {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const hint = getCompletionHint(cmdInput.value.trim());
+    if (hint) {
+      cmdInput.value = hint;
+      if (autocompleteHint) autocompleteHint.textContent = "";
+    }
+    return;
+  }
   if (e.key === "Enter") {
     enviarComando();
     return;
@@ -25,6 +58,7 @@ cmdInput.addEventListener("keydown", (e) => {
     if (historyIndex > 0) {
       historyIndex--;
       cmdInput.value = history[historyIndex];
+      if (autocompleteHint) autocompleteHint.textContent = "";
     }
   }
   if (e.key === "ArrowDown") {
@@ -36,15 +70,25 @@ cmdInput.addEventListener("keydown", (e) => {
       historyIndex = history.length;
       cmdInput.value = "";
     }
+    if (autocompleteHint) autocompleteHint.textContent = "";
   }
 });
 
 // ── Output helpers ───────────────────────────────────────────────────────────
+let _appendBatch = 0;
+
 function appendOutput(text, isCommand = false) {
   const prefix = isCommand ? "❯ " : "  ";
-  outputEl.textContent += prefix + text + "\n";
+  const span = document.createElement("span");
+  span.className = "output-line";
+  // Skip animation when many lines are appended in the same tick (e.g. long listings)
+  if (_appendBatch > 1) span.style.animation = "none";
+  span.textContent = prefix + text + "\n";
+  outputEl.appendChild(span);
   const container = document.getElementById("output-container");
   container.scrollTop = container.scrollHeight;
+  _appendBatch++;
+  requestAnimationFrame(() => { _appendBatch = 0; });
 }
 
 function clearOutput() {
@@ -55,7 +99,7 @@ function clearOutput() {
 function setLoading(loading) {
   sendBtn.disabled = loading;
   cmdInput.disabled = loading;
-  sendBtn.textContent = loading ? "..." : "Enviar";
+  if (typingIndicator) typingIndicator.classList.toggle("visible", loading);
 }
 
 // ── Main send function ───────────────────────────────────────────────────────
@@ -66,6 +110,7 @@ async function enviarComando() {
   pushHistory(cmd);
   appendOutput(cmd, true);
   cmdInput.value = "";
+  if (autocompleteHint) autocompleteHint.textContent = "";
 
   // Handle client-side commands
   if (cmd === "limpar") {
