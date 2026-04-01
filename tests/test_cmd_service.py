@@ -68,3 +68,34 @@ class TestProcessarComando:
         result = processar_comando("limpar")
         # limpar returns a sentinel or empty; just should not raise
         assert result is not None
+
+    @patch("backend.models.sabor.get_db")
+    def test_sabor_do_dia_command(self, mock_get_db):
+        mock_conn, mock_cursor = _make_mock_conn(
+            rows=[{"id": 1, "nome": "Morango", "preco": 9.5}]
+        )
+        mock_get_db.return_value = mock_conn
+
+        from backend.services.cmd_service import processar_comando
+        result = processar_comando("sabor do dia")
+        assert "Morango" in result or "sabor" in result.lower()
+
+    @patch("backend.models.sabor.get_db")
+    def test_sabor_do_dia_sem_sabores(self, mock_get_db):
+        mock_conn, _ = _make_mock_conn(rows=[])
+        mock_get_db.return_value = mock_conn
+
+        from backend.services.cmd_service import processar_comando
+        result = processar_comando("sabor do dia")
+        assert result  # should return a fallback message, not crash
+
+    def test_matrix_command(self):
+        from backend.services.cmd_service import processar_comando
+        result = processar_comando("matrix")
+        assert result == "__MATRIX__"
+
+    def test_ajuda_inclui_novos_comandos(self):
+        from backend.services.cmd_service import processar_comando
+        result = processar_comando("ajuda")
+        assert "sabor do dia" in result
+        assert "matrix" in result

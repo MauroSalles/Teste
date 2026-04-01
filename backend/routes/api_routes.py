@@ -1,10 +1,13 @@
 """REST API blueprint — /api/*"""
 
+import hashlib
+from datetime import date
 from flask import Blueprint, jsonify, request
 
 import backend.models.sabor as sabor_model
 import backend.models.pedido as pedido_model
 import backend.models.estoque as estoque_model
+import backend.models.feedback as feedback_model
 from backend.models.fidelidade import (
     obter_pontos,
     adicionar_pontos,
@@ -184,3 +187,111 @@ def resgatar_pontos(user_id):
         return jsonify({"message": "Recompensa resgatada com sucesso!", **row})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+
+
+# ── Feedback ──────────────────────────────────────────────────────────────────
+
+@api_bp.post("/feedback")
+def criar_feedback():
+    """Submit customer feedback (name, optional email, message, rating 1–5)."""
+    data = request.get_json(silent=True) or {}
+    nome = (data.get("nome") or "").strip()
+    email = (data.get("email") or "").strip() or None
+    mensagem = (data.get("mensagem") or "").strip()
+    nota = data.get("nota")
+
+    if not nome or not mensagem:
+        return jsonify({"error": "nome e mensagem são obrigatórios"}), 400
+    try:
+        nota = int(nota)
+        if nota < 1 or nota > 5:
+            raise ValueError()
+    except (TypeError, ValueError):
+        return jsonify({"error": "nota deve ser um inteiro entre 1 e 5"}), 400
+
+    row = feedback_model.registrar_feedback(nome, email, mensagem, nota)
+    return jsonify(dict(row)), 201
+
+
+@api_bp.get("/feedback")
+def listar_feedback():
+    """Return recent feedback records (last 50, email omitted for privacy)."""
+    rows = feedback_model.listar_feedbacks()
+    return jsonify([dict(r) for r in rows])
+
+
+@api_bp.get("/feedback/media")
+def media_feedback():
+    """Return the average customer rating."""
+    media = feedback_model.media_nota()
+    return jsonify({"media_nota": media})
+
+
+# ── Sabor do Dia ──────────────────────────────────────────────────────────────
+
+@api_bp.get("/sabor-do-dia")
+def sabor_do_dia():
+    """Return a deterministic daily flavor chosen from the active menu."""
+    sabores = sabor_model.listar_sabores()
+    if not sabores:
+        return jsonify({"error": "Nenhum sabor cadastrado"}), 404
+
+    # Deterministic: pick the sabor based on the day of the year
+    day_seed = int(hashlib.md5(str(date.today()).encode()).hexdigest(), 16)
+    escolhido = sabores[day_seed % len(sabores)]
+    return jsonify({
+        "data": str(date.today()),
+        "sabor": dict(escolhido),
+        "descricao": f"Hoje é dia de {escolhido['nome']}! 🍦 Aproveite esse sabor especial do dia.",
+    })
+
+
+# ── Cardápio com info nutricional ─────────────────────────────────────────────
+
+# Static nutritional data keyed by lower-case flavor name (kcal per scoop ~100g)
+_NUTRICIONAL = {
+    "chocolate": {"calorias": 216, "proteinas": 4.0, "carboidratos": 28, "gorduras": 10, "fibras": 1.2},
+    "morango":   {"calorias": 127, "proteinas": 2.5, "carboidratos": 22, "gorduras": 4,  "fibras": 0.6},
+    "baunilha":  {"calorias": 207, "proteinas": 3.5, "carboidratos": 24, "gorduras": 11, "fibras": 0.0},
+    "pistache":  {"calorias": 230, "proteinas": 5.0, "carboidratos": 22, "gorduras": 14, "fibras": 1.5},
+    "limão":     {"calorias": 110, "proteinas": 2.0, "carboidratos": 20, "gorduras": 3,  "fibras": 0.3},
+}
+
+_ALERGENOS = {
+    "chocolate": ["leite", "glúten", "amendoim"],
+    "morango":   ["leite"],
+    "baunilha":  ["leite", "ovos"],
+    "pistache":  ["leite", "nozes"],
+    "limão":     ["leite"],
+}
+
+
+@api_bp.get("/cardapio")
+def cardapio():
+    """Return the full menu enriched with nutritional info and allergens."""
+    sabores = sabor_model.listar_sabores()
+    resultado = []
+    for s in sabores:
+        chave = s["nome"].lower()
+        resultado.append({
+            **dict(s),
+            "nutricional": _NUTRICIONAL.get(chave, {}),
+            "alergenos": _ALERGENOS.get(chave, []),
+        })
+    return jsonify(resultado)
+
+
+@api_bp.get("/cardapio/<int:sabor_id>")
+def cardapio_sabor(sabor_id):
+    """Return a single flavor enriched with nutritional info."""
+    sabores = sabor_model.listar_sabores()
+    sabor = next((s for s in sabores if s["id"] == sabor_id), None)
+    if not sabor:
+        return jsonify({"error": "Sabor não encontrado"}), 404
+    chave = sabor["nome"].lower()
+    return jsonify({
+        **dict(sabor),
+        "nutricional": _NUTRICIONAL.get(chave, {}),
+        "alergenos": _ALERGENOS.get(chave, []),
+    })
+

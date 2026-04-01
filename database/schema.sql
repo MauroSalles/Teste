@@ -77,6 +77,16 @@ CREATE TABLE IF NOT EXISTS fidelidade (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Customer feedback
+CREATE TABLE IF NOT EXISTS feedback (
+    id         SERIAL PRIMARY KEY,
+    nome       VARCHAR(200) NOT NULL,
+    email      VARCHAR(255),
+    mensagem   TEXT NOT NULL,
+    nota       SMALLINT NOT NULL CHECK (nota BETWEEN 1 AND 5),
+    criado_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
