@@ -53,9 +53,10 @@ def register_referral(code: str, referred_user_id: int) -> dict:
             if referrer_id == referred_user_id:
                 raise ValueError("Cannot use your own referral code")
             cur.execute(
-                "UPDATE referral_codes SET referral_count = referral_count + 1 WHERE code = %s",
+                "UPDATE referral_codes SET referral_count = referral_count + 1 WHERE code = %s RETURNING referral_count",
                 (code,),
             )
+            new_count = cur.fetchone()["referral_count"]
             cur.execute(
                 """
                 INSERT INTO referral_conversions (referrer_id, referred_id, status)
@@ -64,7 +65,7 @@ def register_referral(code: str, referred_user_id: int) -> dict:
                 """,
                 (referrer_id, referred_user_id),
             )
-            return {"referrer_id": referrer_id, "referred_id": referred_user_id, "code": code}
+            return {"referrer_id": referrer_id, "referred_id": referred_user_id, "code": code, "referral_count": new_count}
 
 
 def get_referral_stats(user_id: int) -> dict:

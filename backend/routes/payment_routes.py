@@ -15,7 +15,7 @@ payment_bp = Blueprint("payment_bp", __name__, url_prefix="/api/payments")
 @payment_bp.route("/methods", methods=["GET"])
 def list_methods():
     methods = []
-    if os.environ.get("STRIPE_SECRET_KEY"):
+    if os.getenv("STRIPE_SECRET_KEY"):
         methods.append({"id": "stripe", "name": "Cartão de Crédito/Débito (Stripe)", "enabled": True})
     else:
         methods.append({"id": "stripe", "name": "Cartão de Crédito/Débito (Stripe)", "enabled": False})

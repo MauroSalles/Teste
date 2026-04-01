@@ -28,7 +28,7 @@ def referral_register(current_user):
         result = register_referral(code, current_user["id"])
         return jsonify(result), 201
     except ValueError as exc:
-        logger.warning("referral_register validation: %s", exc)
+        logger.warning("Referral code validation failed: %s", exc)
         return jsonify({"error": "Invalid referral code or operation not allowed"}), 400
     except Exception as exc:
         logger.error("referral_register error: %s", exc)

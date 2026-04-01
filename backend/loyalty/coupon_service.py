@@ -50,7 +50,7 @@ def validate_coupon(code: str, user_id: int, order_value: float) -> dict:
             if expiry and date.today() > expiry:
                 return {"valid": False, "error": "Cupom expirado"}
 
-            # Step 4: single use per user
+            # Step 4: single use per user (one coupon per user lifetime)
             cur.execute(
                 "SELECT COUNT(*) AS cnt FROM coupon_usage_log WHERE coupon_id = %s AND user_id = %s",
                 (coupon["id"], user_id),
