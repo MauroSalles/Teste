@@ -1,3 +1,7 @@
+import os
+import sys
+import time
+
 from backend.models.sabor import (
     listar_sabores,
     adicionar_sabor,
@@ -7,6 +11,8 @@ from backend.models.sabor import (
 )
 from backend.models.pedido import listar_pedidos, criar_pedido
 from backend.models.estoque import ver_estoque, definir_estoque, ajustar_estoque, obter_estoque
+
+_START_TIME = time.time()
 
 
 def processar_comando(comando):
@@ -33,6 +39,7 @@ def processar_comando(comando):
             "    reduzir estoque <sabor> <qtd>     → reduz o estoque de um sabor\n"
             "\n"
             "  Sistema:\n"
+            "    versao                            → exibe a versão do sistema\n"
             "    status                            → resumo geral do sistema\n"
             "    limpar                            → limpa a tela\n"
             "    ajuda                             → exibe este menu\n"
@@ -193,6 +200,9 @@ def processar_comando(comando):
 
     # ── Sistema ───────────────────────────────────────────────────────────────
 
+    elif comando == "versao":
+        return "Gelateria Pro v2.0.0 | Python/Flask | PostgreSQL | Build: 2026-Q2"
+
     elif comando == "status":
         sabores = listar_sabores()
         pedidos = listar_pedidos()
@@ -200,8 +210,16 @@ def processar_comando(comando):
         total_sabores = len(sabores)
         total_pedidos = len(pedidos)
         sem_estoque = [i for i in itens if int(i["quantidade"]) == 0]
+        uptime_s = int(time.time() - _START_TIME)
+        uptime_str = f"{uptime_s // 3600}h {(uptime_s % 3600) // 60}m {uptime_s % 60}s"
+        py_version = sys.version.split()[0]
+        env = os.getenv("FLASK_ENV", "production")
         linhas = [
             "═══ Status do Sistema ═══",
+            f"  Versão              : Gelateria Pro v2.0.0",
+            f"  Python              : {py_version}",
+            f"  Ambiente            : {env}",
+            f"  Uptime              : {uptime_str}",
             f"  Sabores cadastrados : {total_sabores}",
             f"  Pedidos registrados : {total_pedidos}",
             f"  Sabores sem estoque : {len(sem_estoque)}",

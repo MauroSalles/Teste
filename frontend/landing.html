@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Pro — Sistema de Gestão Inteligente</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --bg2: #111111;
+      --card: #1a1a1a;
+      --accent: #00ff88;
+      --accent2: #00ccff;
+      --text: #e0e0e0;
+      --muted: #888;
+      --border: #2a2a2a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    #nav-status {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    #status-dot { font-size: 0.7rem; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%,
+        rgba(0,255,136,0.08) 0%,
+        rgba(0,204,255,0.05) 40%,
+        transparent 70%);
+      animation: pulse-bg 6s ease-in-out infinite alternate;
+    }
+    @keyframes pulse-bg {
+      from { opacity: 0.6; }
+      to   { opacity: 1; }
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      position: relative;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+      position: relative;
+    }
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      position: relative;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s, background .15s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,255,136,0.35);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* floating glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      animation: float 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .orb1 { width: 400px; height: 400px; background: var(--accent); top: 10%; left: -10%; animation-delay: 0s; }
+    .orb2 { width: 300px; height: 300px; background: var(--accent2); top: 40%; right: -5%; animation-delay: 3s; }
+    .orb3 { width: 250px; height: 250px; background: #ff00aa; bottom: 5%; left: 30%; animation-delay: 1.5s; }
+    @keyframes float {
+      from { transform: translateY(0) scale(1); }
+      to   { transform: translateY(-30px) scale(1.05); }
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 3rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .card:hover {
+      border-color: rgba(0,255,136,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+    .card:hover::before { opacity: 1; }
+    .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; color: #fff; }
+    .card p { font-size: 0.9rem; color: var(--muted); line-height: 1.55; }
+    .card-tag {
+      display: inline-block;
+      margin-top: 0.9rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      background: rgba(0,255,136,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+
+    /* ── STACK BANNER ── */
+    .stack-section {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem;
+    }
+    .stack-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .stack-inner h2 { font-size: 1.1rem; color: var(--muted); margin-bottom: 1.5rem; font-weight: 400; }
+    .stack-pills { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 2.5rem 2rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .nav-links a:not(:last-child) { display: none; }
+      .cta-group { flex-direction: column; align-items: center; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-brand">🍦 Gelateria Pro</a>
+    <div class="nav-links">
+      <a href="#features">Funcionalidades</a>
+      <a href="status.html">Status</a>
+      <a href="index.html">Terminal</a>
+      <a href="dashboard.html">Dashboard</a>
+      <div id="nav-status">
+        <span id="status-dot">⚪</span>
+        <span id="status-text">...</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <div class="hero-badge">✨ v2.0.0 — Projeto Integrador Univesp</div>
+    <h1>🍦 Gelateria Pro</h1>
+    <p>Sistema de Gestão Inteligente para Gelaterias Modernas</p>
+
+    <div class="cta-group">
+      <a href="index.html" class="btn btn-primary">🖥️ Acessar Terminal</a>
+      <a href="dashboard.html" class="btn btn-secondary">📊 Ver Dashboard</a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="section" id="features">
+    <h2 class="section-title">Tudo que você precisa</h2>
+    <p class="section-sub">Uma plataforma completa para gerir sua gelateria com tecnologia de ponta</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🖥️</div>
+        <h3>Terminal CMD</h3>
+        <p>Interface de linha de comando para controle total: sabores, pedidos, estoque e status do sistema em tempo real.</p>
+        <span class="card-tag">Produtividade</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Dashboard Real-time</h3>
+        <p>Painel visual com métricas ao vivo via WebSocket. Vendas, estoque e indicadores na palma da mão.</p>
+        <span class="card-tag">Tempo Real</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">💳</div>
+        <h3>Pagamentos</h3>
+        <p>Integração nativa com Stripe para cartões e PIX via Braspag. Checkout rápido e seguro.</p>
+        <span class="card-tag">Stripe · PIX</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>IA Chatbot</h3>
+        <p>Assistente inteligente powered by OpenAI GPT para recomendações personalizadas e suporte ao cliente.</p>
+        <span class="card-tag">OpenAI GPT</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎁</div>
+        <h3>Loyalty &amp; Cupons</h3>
+        <p>Programa de fidelidade com gamificação, pontos, cupons de desconto e sistema de referências.</p>
+        <span class="card-tag">Engajamento</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔔</div>
+        <h3>Notificações</h3>
+        <p>E-mail transacional via SendGrid, WhatsApp e Instagram via Twilio. Seus clientes sempre informados.</p>
+        <span class="card-tag">SendGrid · Twilio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STACK -->
+  <div class="stack-section">
+    <div class="stack-inner">
+      <h2>Tecnologias utilizadas</h2>
+      <div class="stack-pills">
+        <span class="pill">🐍 Python 3</span>
+        <span class="pill">🌶️ Flask</span>
+        <span class="pill">🐘 PostgreSQL</span>
+        <span class="pill">⚡ Socket.IO</span>
+        <span class="pill">💳 Stripe</span>
+        <span class="pill">🤖 OpenAI</span>
+        <span class="pill">📧 SendGrid</span>
+        <span class="pill">📱 Twilio</span>
+        <span class="pill">🐳 Docker</span>
+        <span class="pill">☁️ Render / Vercel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Gelateria Pro — Projeto Integrador Univesp · Python + Flask + PostgreSQL</p>
+    <p style="margin-top:0.5rem;">
+      <a href="status.html">Status da API</a> ·
+      <a href="index.html">Terminal</a> ·
+      <a href="dashboard.html">Dashboard</a>
+    </p>
+  </footer>
+
+  <script>
+    async function checkHealth() {
+      const dot  = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      try {
+        const r = await fetch('/health', { signal: AbortSignal.timeout(4000) });
+        if (r.ok) {
+          dot.textContent  = '🟢';
+          text.textContent = 'Online';
+        } else {
+          throw new Error('not ok');
+        }
+      } catch {
+        dot.textContent  = '🔴';
+        text.textContent = 'Offline';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>

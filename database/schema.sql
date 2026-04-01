@@ -86,3 +86,89 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Limão', 9.00)
 ON CONFLICT DO NOTHING;
 
+
+-- Payments table
+CREATE TABLE IF NOT EXISTS payments (
+    id          SERIAL PRIMARY KEY,
+    pedido_id   INTEGER REFERENCES pedidos(id) ON DELETE SET NULL,
+    metodo      VARCHAR(50) NOT NULL CHECK (metodo IN ('stripe', 'pix', 'dinheiro')),
+    status      VARCHAR(50) NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'aprovado', 'recusado', 'cancelado')),
+    valor       DECIMAL(10, 2) NOT NULL,
+    external_id VARCHAR(255),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Referral codes
+CREATE TABLE IF NOT EXISTS referral_codes (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    code        VARCHAR(20) NOT NULL UNIQUE,
+    referral_count INTEGER NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Referral conversions
+CREATE TABLE IF NOT EXISTS referral_conversions (
+    id          SERIAL PRIMARY KEY,
+    referrer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    referred_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status      VARCHAR(20) NOT NULL DEFAULT 'completed',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (referrer_id, referred_id)
+);
+
+-- Coupons
+CREATE TABLE IF NOT EXISTS coupons (
+    id              SERIAL PRIMARY KEY,
+    code            VARCHAR(50) NOT NULL UNIQUE,
+    discount_pct    DECIMAL(5, 2) NOT NULL CHECK (discount_pct > 0 AND discount_pct <= 100),
+    max_discount_brl DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
+    min_order_brl   DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    max_uses_per_day INTEGER NOT NULL DEFAULT 5,
+    max_uses_per_month INTEGER NOT NULL DEFAULT 2,
+    expiry_date     DATE,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Coupon usage log
+CREATE TABLE IF NOT EXISTS coupon_usage_log (
+    id          SERIAL PRIMARY KEY,
+    coupon_id   INTEGER NOT NULL REFERENCES coupons(id) ON DELETE CASCADE,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    order_value DECIMAL(10, 2) NOT NULL,
+    discount_applied DECIMAL(10, 2) NOT NULL,
+    used_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Chat logs (AI chatbot)
+CREATE TABLE IF NOT EXISTS chat_logs (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    message     TEXT NOT NULL,
+    response    TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Product reviews
+CREATE TABLE IF NOT EXISTS reviews (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    sabor_id    INTEGER REFERENCES sabores(id) ON DELETE CASCADE,
+    rating      INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment     TEXT,
+    sentiment   VARCHAR(20),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Notification log
+CREATE TABLE IF NOT EXISTS notification_log (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    type        VARCHAR(50) NOT NULL,
+    channel     VARCHAR(50) NOT NULL DEFAULT 'email',
+    subject     VARCHAR(255),
+    status      VARCHAR(20) NOT NULL DEFAULT 'sent',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
