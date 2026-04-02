@@ -105,3 +105,18 @@ async function enviarComando() {
   }
 }
 
+// ── Socket.IO realtime events ────────────────────────────────────────────────
+(function initSocketIO() {
+  if (typeof io === "undefined") return;
+
+  const socket = io(API_URL);
+
+  socket.on("pedido_novo", (data) => {
+    appendOutput(`📡 Novo pedido: ${data.sabor} x${data.quantidade}`);
+  });
+
+  socket.on("estoque_atualizado", (data) => {
+    appendOutput(`📡 Estoque: ${data.sabor} atualizado para ${data.quantidade}`);
+  });
+})();
+

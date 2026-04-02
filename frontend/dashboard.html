@@ -227,6 +227,7 @@
     <div class="nav-links">
       <a href="index.html">💻 Terminal</a>
       <a href="dashboard.html" class="active">📊 Dashboard</a>
+      <span id="ws-status" title="Status WebSocket" style="font-size:0.85em;color:#888;">🔴 Desconectado</span>
       <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
     </div>
   </nav>
@@ -422,6 +423,22 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
+
+    // ── Socket.IO ──────────────────────────────────────────────────────────
+    if (typeof io !== 'undefined') {
+      const socket = io(API_URL);
+      const wsStatus = document.getElementById('ws-status');
+      socket.on('connect', () => { wsStatus.textContent = '🟢 Conectado'; wsStatus.style.color = '#00cc44'; });
+      socket.on('disconnect', () => { wsStatus.textContent = '🔴 Desconectado'; wsStatus.style.color = '#888'; });
+      socket.on('dashboard_atualizado', () => loadDashboard());
+    }
   </script>
+
+  <!-- Socket.IO client -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQbl" crossorigin="anonymous"></script>
+  <!-- Loyalty widget -->
+  <script src="js/loyalty-widget.js"></script>
+  <!-- Chatbot widget -->
+  <script src="js/chatbot-widget.js"></script>
 </body>
 </html>
