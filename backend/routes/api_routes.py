@@ -128,10 +128,10 @@ def status():
     sabores = sabor_model.listar_sabores()
     pedidos = pedido_model.listar_pedidos()
     estoque = estoque_model.ver_estoque()
+    # Build O(1) lookup by name to avoid O(N²) scan per order
+    preco_por_nome = {s["nome"]: float(s["preco"]) for s in sabores}
     receita = sum(
-        float(p.get("quantidade", 0)) * float(
-            next((s["preco"] for s in sabores if s["nome"] == p.get("sabor")), 0)
-        )
+        float(p.get("quantidade", 0)) * preco_por_nome.get(p.get("sabor", ""), 0.0)
         for p in pedidos
     )
     estoque_baixo = [e for e in estoque if int(e.get("quantidade", 0)) < 5]
