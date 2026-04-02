@@ -3,27 +3,223 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🍦 Gelateria Sistema</title>
+  <title>🍦 Gelateria Pro — Terminal</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#00ff41" />
+  <meta name="theme-color" content="#7c3aed" />
+  <style>
+    /* ── Extended styles for the new nav and Gelinho overlay ─────────── */
+    :root {
+      --accent-purple: #7c3aed;
+      --accent-pink:   #ec4899;
+      --accent-glow:   rgba(124,58,237,0.3);
+    }
+
+    /* Override primary accent to purple when on this page */
+    body {
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    /* ── App-bar above the terminal ───────────────────────────────────── */
+    #appbar {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto 12px auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .appbar-brand {
+      font-size: 1.05em;
+      font-weight: 800;
+      color: var(--accent-purple);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .appbar-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .appbar-links a, .appbar-links button {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 0.78em;
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+      background: transparent;
+      font-family: inherit;
+    }
+    .appbar-links a:hover, .appbar-links button:hover {
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+    }
+    .appbar-streak {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: #f59e0b;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78em;
+      font-weight: 700;
+    }
+
+    /* ── Toast System (minimal) ───────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1a1a22;
+      border: 1px solid #2e2e3d;
+      border-radius: 8px;
+      padding: 11px 16px;
+      max-width: 280px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      pointer-events: all;
+      animation: tIn 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #f1f0fb;
+    }
+    .toast.exit { animation: tOut 0.3s ease forwards; }
+    @keyframes tIn  { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:none; } }
+    @keyframes tOut { to   { opacity:0; transform:translateX(50px); } }
+    .toast-icon { font-size: 1.1em; flex-shrink:0; margin-top:1px; }
+    .toast-body { flex:1; }
+    .toast-title { font-weight:700; margin-bottom:1px; }
+    .toast-msg   { opacity:0.7; font-size:0.9em; }
+    .toast-close { background:none; border:none; color:#888; cursor:pointer; font-size:1em; padding:0; }
+    .toast.success { border-left: 3px solid #22c55e; }
+    .toast.error   { border-left: 3px solid #ef4444; }
+    .toast.info    { border-left: 3px solid #3b82f6; }
+    .toast.magic   { border-left: 3px solid #a855f7; }
+
+    /* ── Gelinho Button ───────────────────────────────────────────────── */
+    #gelinho-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      border: none;
+      font-size: 1.6em;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      z-index: 1000;
+      transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center;
+      animation: float 3s ease-in-out infinite;
+    }
+    #gelinho-btn:hover { transform: scale(1.1); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    .gel-notif {
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 14px; height: 14px;
+      background: #ef4444;
+      border-radius: 50%;
+      display: none;
+    }
+    #gelinho-btn.has-msg .gel-notif { display: block; }
+
+    /* ── Gelinho Chat ──────────────────────────────────────────────────── */
+    #gelinho-chat {
+      position: fixed;
+      bottom: 88px;
+      right: 24px;
+      width: 280px;
+      background: #18181f;
+      border: 1px solid #2e2e3d;
+      border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+      z-index: 1001;
+      overflow: hidden;
+      display: none;
+    }
+    #gelinho-chat.open { display: flex; flex-direction: column; animation: chatIn 0.3s ease; }
+    @keyframes chatIn { from{opacity:0;transform:scale(0.9) translateY(10px)} to{opacity:1;transform:none} }
+    .gchat-header {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      padding: 11px 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .gchat-name { font-weight:700; color:#fff; font-size:0.9em; font-family: -apple-system, sans-serif; }
+    .gchat-sub  { font-size:0.72em; color:rgba(255,255,255,0.75); font-family: -apple-system, sans-serif; }
+    .gchat-close { margin-left:auto; background:none; border:none; color:rgba(255,255,255,0.8); cursor:pointer; font-size:1.1em; }
+    .gchat-msgs {
+      padding:12px; max-height:170px; overflow-y:auto;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .gchat-msg {
+      background: #22222c;
+      border-radius: 10px 10px 10px 3px;
+      padding: 9px 12px;
+      font-size:0.83em;
+      line-height:1.4;
+      color:#f1f0fb;
+      font-family: -apple-system, sans-serif;
+      animation: msgIn 0.2s ease;
+    }
+    @keyframes msgIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+    .gchat-footer { padding:10px; border-top:1px solid #2e2e3d; display:flex; gap:6px; }
+    .gchat-input {
+      flex:1; background:#22222c; border:1px solid #2e2e3d; color:#f1f0fb;
+      padding:7px 11px; border-radius:20px; font-size:0.82em; font-family:inherit; outline:none;
+    }
+    .gchat-input:focus { border-color: var(--accent-purple); }
+    .gchat-send {
+      background: var(--accent-purple); border:none; color:#fff;
+      width:30px; height:30px; border-radius:50%; font-size:0.9em; cursor:pointer; flex-shrink:0;
+    }
+
+    @media(max-width:540px) {
+      #appbar { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
 </head>
 <body>
+  <div id="toast-container"></div>
+
+  <!-- App bar -->
+  <div id="appbar">
+    <a class="appbar-brand" href="index.html">🍦 Gelateria Pro</a>
+    <div class="appbar-links">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <div class="appbar-streak" id="appbar-streak" title="Streak de check-ins">🔥 <span id="streak-val">0</span></div>
+      <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    </div>
+  </div>
+
   <div id="terminal">
     <div id="header">
       <div id="header-top">
-        <span class="prompt">🍦 Gelateria Sistema v1.1</span>
-        <div id="header-nav">
-          <a href="dashboard.html">📊 Dashboard</a>
-          <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
-        </div>
+        <span class="prompt">🍦 Gelateria Pro v4.0</span>
       </div>
       <span class="subtitle">Digite 'ajuda' · ↑↓ histórico · 'limpar' para limpar a tela</span>
     </div>
 
     <div id="output-container">
-      <pre id="output">Bem-vindo ao Sistema de Gelateria!
-Digite 'ajuda' para ver os comandos disponíveis.
+      <pre id="output">Bem-vindo ao Gelateria Pro v4.0! 🍦✨
+Digite 'ajuda' para ver todos os comandos.
 </pre>
     </div>
 
@@ -33,42 +229,167 @@ Digite 'ajuda' para ver os comandos disponíveis.
         type="text"
         id="cmd"
         autocomplete="off"
-        placeholder="Digite um comando..."
+        placeholder="Digite um comando…"
         autofocus
       />
       <button id="send-btn" onclick="enviarComando()">Enviar</button>
     </div>
   </div>
 
+  <!-- Gelinho Mascote -->
+  <button id="gelinho-btn" onclick="toggleGelinho()" title="Converse com o Gelinho! 🍦" aria-label="Abrir Gelinho">
+    🍦<div class="gel-notif" id="gel-notif"></div>
+  </button>
+
+  <div id="gelinho-chat">
+    <div class="gchat-header">
+      <div>
+        <div class="gchat-name">🍦 Gelinho</div>
+        <div class="gchat-sub">Assistente da Gelateria</div>
+      </div>
+      <button class="gchat-close" onclick="toggleGelinho()">✕</button>
+    </div>
+    <div class="gchat-msgs" id="gchat-msgs"></div>
+    <div class="gchat-footer">
+      <input class="gchat-input" id="gchat-input" placeholder="Diga algo…" maxlength="120"
+             onkeydown="if(event.key==='Enter')sendGelinho()" />
+      <button class="gchat-send" onclick="sendGelinho()">➤</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
   <script>
-    // Theme toggle
+    // ── Session ────────────────────────────────────────────────────────────
+    function getSessionId() {
+      let sid = localStorage.getItem('gel_session');
+      if (!sid) {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+          sid = crypto.randomUUID();
+        } else if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          const arr = new Uint8Array(16);
+          crypto.getRandomValues(arr);
+          sid = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+        } else {
+          sid = Date.now().toString(36) + Math.random().toString(36).slice(2);
+        }
+        localStorage.setItem('gel_session', sid);
+      }
+      return sid;
+    }
+    const SESSION_ID = getSessionId();
+
+    // ── Theme ──────────────────────────────────────────────────────────────
     function toggleTheme() {
       const html = document.documentElement;
       const btn = document.getElementById('theme-toggle');
       if (html.getAttribute('data-theme') === 'light') {
         html.removeAttribute('data-theme');
         btn.textContent = '🌙';
-        localStorage.setItem('theme', 'dark');
+        localStorage.setItem('gel_theme', 'dark');
       } else {
         html.setAttribute('data-theme', 'light');
         btn.textContent = '☀️';
-        localStorage.setItem('theme', 'light');
+        localStorage.setItem('gel_theme', 'light');
       }
     }
-    // Restore saved theme
-    if (localStorage.getItem('theme') === 'light') {
+    if (localStorage.getItem('gel_theme') === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
       document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('theme-toggle');
         if (btn) btn.textContent = '☀️';
       });
     }
-    // Register service worker
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function _escT(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function showToast(title, msg, type = 'info', dur = 4000) {
+      const icons = {success:'✅', error:'❌', info:'ℹ️', magic:'✨'};
+      const c = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<div class="toast-icon">${icons[type]||'ℹ️'}</div>
+        <div class="toast-body"><div class="toast-title">${_escT(title)}</div>${msg?`<div class="toast-msg">${_escT(msg)}</div>`:''}</div>
+        <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>`;
+      c.appendChild(el);
+      if (dur > 0) setTimeout(() => { el.classList.add('exit'); setTimeout(()=>el.remove(), 300); }, dur);
+    }
+
+    // ── Streak display ─────────────────────────────────────────────────────
+    async function loadStreak() {
+      try {
+        const res = await fetch(
+          (window.API_URL || (location.hostname === 'localhost' ? 'http://localhost:5000' : '')) + '/api/checkin/status',
+          { headers: { 'X-Session-Id': SESSION_ID } }
+        );
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('streak-val').textContent = d.streak ?? 0;
+        }
+      } catch (_) {}
+    }
+    loadStreak();
+
+    // ── Gelinho Mascote ────────────────────────────────────────────────────
+    const GELINHO_RESP = [
+      "Oi! Que bom te ver! 😊 Que sabor você quer hoje?",
+      "O Sabor do Dia está incrível — foi feito especialmente para você!",
+      "Não esqueça de fazer seu check-in diário! 🔥",
+      "Partilhe um momento doce no Dashboard → Feed! 💬",
+      "Tip: use o comando 'sabores' para ver o cardápio completo! 🍦",
+      "Cada colherada é uma viagem. Para onde você quer ir? ✈️",
+      "O segredo está nos detalhes. Como os nossos ingredientes! 🌿",
+      "Obrigado por fazer parte da família Gelateria! 💛",
+    ];
+    let gelinhoOpen = false;
+    let gMsgCount = 0;
+    let idleTimer;
+
+    function resetIdle() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (!gelinhoOpen) {
+          document.getElementById('gelinho-btn').classList.add('has-msg');
+        }
+      }, 30000);
+    }
+    document.addEventListener('mousemove', resetIdle);
+    document.addEventListener('keydown', resetIdle);
+    resetIdle();
+
+    function toggleGelinho() {
+      gelinhoOpen = !gelinhoOpen;
+      document.getElementById('gelinho-chat').classList.toggle('open', gelinhoOpen);
+      document.getElementById('gelinho-btn').classList.remove('has-msg');
+      if (gelinhoOpen && gMsgCount === 0) {
+        addGMsg("Oi! 🍦 Sou o Gelinho, seu assistente! Como posso ajudar?");
+      }
+    }
+    function addGMsg(text) {
+      const c = document.getElementById('gchat-msgs');
+      const d = document.createElement('div');
+      d.className = 'gchat-msg'; d.textContent = text;
+      c.appendChild(d);
+      c.scrollTop = c.scrollHeight;
+      gMsgCount++;
+    }
+    function sendGelinho() {
+      const inp = document.getElementById('gchat-input');
+      const val = inp.value.trim(); if (!val) return;
+      inp.value = '';
+      const c = document.getElementById('gchat-msgs');
+      const ud = document.createElement('div');
+      ud.className = 'gchat-msg';
+      ud.style.cssText = 'background:var(--accent-purple);color:#fff;border-radius:10px 10px 3px 10px;text-align:right';
+      ud.textContent = val;
+      c.appendChild(ud);
+      c.scrollTop = c.scrollHeight;
+      setTimeout(() => addGMsg(GELINHO_RESP[Math.floor(Math.random() * GELINHO_RESP.length)]), 600);
+    }
+
+    // ── Register SW ────────────────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   </script>
 </body>
 </html>
-

@@ -77,6 +77,38 @@ CREATE TABLE IF NOT EXISTS fidelidade (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Daily check-ins (Sabor do Dia + Streak)
+CREATE TABLE IF NOT EXISTS daily_checkins (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    session_id VARCHAR(64),          -- anonymous sessions (no login)
+    date       DATE NOT NULL DEFAULT CURRENT_DATE,
+    mood       VARCHAR(20),          -- 'happy' | 'neutral' | 'sad'
+    streak     INTEGER NOT NULL DEFAULT 1,
+    UNIQUE (user_id, date),
+    UNIQUE (session_id, date)
+);
+
+-- Social feed posts
+CREATE TABLE IF NOT EXISTS social_posts (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    author     VARCHAR(100) NOT NULL DEFAULT 'Anônimo',
+    content    TEXT NOT NULL,
+    emoji      VARCHAR(10) DEFAULT '🍦',
+    likes      INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Social post likes (deduplication)
+CREATE TABLE IF NOT EXISTS social_likes (
+    id         SERIAL PRIMARY KEY,
+    post_id    INTEGER NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE,
+    session_id VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (post_id, session_id)
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
@@ -84,5 +116,12 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Baunilha', 8.00),
     ('Pistache', 12.00),
     ('Limão', 9.00)
+ON CONFLICT DO NOTHING;
+
+-- Seed social posts
+INSERT INTO social_posts (author, content, emoji) VALUES
+    ('Mauro', 'Que sorvete incrível hoje! 😍 Pistache estava divino!', '🍦'),
+    ('Ana', 'Morango com calda de chocolate — combinação perfeita!', '🍓'),
+    ('Carlos', 'Primeira visita aqui, já virei fã! 🎉', '🎉')
 ON CONFLICT DO NOTHING;
 
