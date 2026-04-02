@@ -34,7 +34,7 @@ def health_ready():
         return jsonify({"status": "ready", "service": "gelateria-backend"})
     except Exception as exc:
         logger.warning("Readiness probe: DB unreachable — %s", exc)
-        return jsonify({"status": "not_ready", "error": str(exc)}), 503
+        return jsonify({"status": "not_ready", "error": "database unavailable"}), 503
 
 
 @health_bp.route("/health/detailed", methods=["GET"])
@@ -50,7 +50,7 @@ def health_detailed():
                 cur.execute("SELECT 1")
     except Exception as exc:
         db_status = "error"
-        db_error = str(exc)
+        db_error = "unreachable"
         logger.warning("Health check: DB unreachable — %s", exc)
 
     jwt_status = "ok" if len(_JWT_SECRET_KEY) >= 32 else "weak"

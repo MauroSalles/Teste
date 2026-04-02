@@ -62,8 +62,8 @@ def criar_review(current_user):
     try:
         row = review_model.criar_review(current_user["id"], sabor_id, rating, comentario)
         return jsonify(dict(row)), 201
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
+    except ValueError:
+        return jsonify({"error": "rating inválido (deve ser entre 1 e 5)"}), 400
     except Exception as exc:
         logger.error("criar_review error: %s", exc)
         return jsonify({"error": "Erro ao salvar avaliação"}), 500
