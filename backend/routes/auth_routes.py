@@ -8,6 +8,17 @@ from backend.auth.jwt_handler import generate_token, token_required
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 
+def _is_valid_email(email: str) -> bool:
+    """Basic email validation without backtracking-prone regex."""
+    if not email or len(email) > 254:
+        return False
+    parts = email.split("@")
+    if len(parts) != 2:
+        return False
+    local, domain = parts
+    return bool(local) and "." in domain and not domain.startswith(".") and not domain.endswith(".")
+
+
 @auth_bp.post("/register")
 def register():
     data = request.get_json(silent=True) or {}
@@ -17,8 +28,10 @@ def register():
 
     if not name or not email or not password:
         return jsonify({"error": "name, email e password são obrigatórios"}), 400
-    if len(password) < 6:
-        return jsonify({"error": "password deve ter no mínimo 6 caracteres"}), 400
+    if not _is_valid_email(email):
+        return jsonify({"error": "E-mail inválido"}), 400
+    if len(password) < 8:
+        return jsonify({"error": "password deve ter no mínimo 8 caracteres"}), 400
 
     try:
         user = criar_usuario(name, email, password)

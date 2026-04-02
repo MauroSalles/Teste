@@ -1,5 +1,6 @@
 import os
 import logging
+import datetime
 from functools import wraps
 
 import jwt
@@ -7,8 +8,15 @@ from flask import request, jsonify
 
 logger = logging.getLogger(__name__)
 
-_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-me-in-production")
+_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-me-in-production-32chars!!")
 _ALGORITHM = "HS256"
+
+if len(_SECRET_KEY) < 32:
+    logger.warning(
+        "JWT_SECRET_KEY is shorter than 32 characters (%d bytes). "
+        "Set a strong random secret via the JWT_SECRET_KEY environment variable.",
+        len(_SECRET_KEY),
+    )
 
 
 def token_required(f):
@@ -37,8 +45,6 @@ def token_required(f):
 
 def generate_token(user_id, email):
     """Generate a JWT token for the given user (utility for testing / login endpoint)."""
-    import datetime
-
     payload = {
         "sub": str(user_id),
         "email": email,

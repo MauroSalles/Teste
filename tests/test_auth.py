@@ -35,6 +35,12 @@ class TestRegister:
                            json={"name": "Mauro", "email": "m@m.com", "password": "123"})
         assert resp.status_code == 400
 
+    def test_register_invalid_email(self, client):
+        resp = client.post("/api/auth/register",
+                           json={"name": "Mauro", "email": "not-an-email", "password": "secret123"})
+        assert resp.status_code == 400
+        assert "E-mail" in resp.get_json().get("error", "")
+
     @patch("backend.models.user.get_db")
     def test_register_success(self, mock_db, client):
         mock_conn = MagicMock()
