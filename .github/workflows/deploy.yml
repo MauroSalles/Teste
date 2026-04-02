@@ -90,7 +90,7 @@ jobs:
   # 3. Deploy backend to Render (on push to main only)
   # ─────────────────────────────────────────────────────────
   deploy-backend:
-    name: Deploy Backend (Render)
+    name: Deploy Backend (Render) — Blue/Green
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -101,6 +101,31 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
         # Set RENDER_DEPLOY_HOOK_URL in GitHub repo Settings → Secrets
+
+      # ── Zero-downtime health check ────────────────────────────────────────
+      # Poll /health until the new instance is live (up to 5 minutes).
+      # Render routes traffic only after the health check passes, so this
+      # effectively implements a blue/green / rolling-update pattern.
+      - name: Wait for deployment health check
+        if: secrets.RENDER_BACKEND_URL != ''
+        run: |
+          URL="${{ secrets.RENDER_BACKEND_URL }}/health"
+          MAX=30
+          INTERVAL=10
+          echo "Polling $URL every ${INTERVAL}s (max ${MAX} attempts)…"
+          for i in $(seq 1 $MAX); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            echo "Attempt $i/$MAX — HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Deployment is healthy."
+              exit 0
+            fi
+            sleep $INTERVAL
+          done
+          echo "❌ Health check timed out after $((MAX * INTERVAL))s."
+          exit 1
+        # Set RENDER_BACKEND_URL in GitHub repo Secrets
+        # (e.g. https://gelateria-backend.onrender.com)
 
   # ─────────────────────────────────────────────────────────
   # 4. Deploy frontend to Vercel (on push to main only)
