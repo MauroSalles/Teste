@@ -86,3 +86,48 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Limão', 9.00)
 ON CONFLICT DO NOTHING;
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Partners & Marketplace (FEATURE_MARKETPLACE)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS partners (
+    id           SERIAL PRIMARY KEY,
+    name         VARCHAR(200) NOT NULL,
+    email        VARCHAR(255) NOT NULL UNIQUE,
+    api_key      VARCHAR(128) NOT NULL UNIQUE,
+    plan         VARCHAR(50) NOT NULL DEFAULT 'free',  -- free | starter | pro
+    active       BOOLEAN NOT NULL DEFAULT TRUE,
+    metadata     JSONB,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Franchise Portal (FEATURE_FRANCHISE_PORTAL)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS franchises (
+    id             SERIAL PRIMARY KEY,
+    name           VARCHAR(200) NOT NULL,
+    owner_name     VARCHAR(200) NOT NULL,
+    email          VARCHAR(255) NOT NULL UNIQUE,
+    city           VARCHAR(100),
+    country        VARCHAR(100) NOT NULL DEFAULT 'Brazil',
+    status         VARCHAR(50) NOT NULL DEFAULT 'pending',  -- pending | active | suspended
+    partner_id     INTEGER REFERENCES partners(id) ON DELETE SET NULL,
+    opened_at      DATE,
+    metadata       JSONB,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Feature flag overrides per tenant (stored preferences override env vars)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS feature_flag_overrides (
+    id         SERIAL PRIMARY KEY,
+    tenant_id  VARCHAR(100) NOT NULL,
+    flag_name  VARCHAR(100) NOT NULL,
+    enabled    BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (tenant_id, flag_name)
+);

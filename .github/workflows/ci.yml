@@ -40,4 +40,7 @@ jobs:
         env:
           FLASK_ENV: testing
           JWT_SECRET_KEY: ci-test-secret
+          FEATURE_I18N: "1"
+          TENANT_ID: gelateria_pro
+          TENANT_NAME: Gelateria Pro
         run: PYTHONPATH=${{ github.workspace }} python -m pytest tests/ -v --tb=short

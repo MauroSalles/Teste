@@ -8,6 +8,10 @@ from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
 from backend.routes.api_routes import api_bp
 from backend.routes.auth_routes import auth_bp
+from backend.routes.partner_routes import partner_bp
+from backend.routes.features_routes import features_bp
+from backend.routes.onboarding_routes import onboarding_bp
+from backend.routes.openapi_routes import openapi_bp
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +41,10 @@ def create_app():
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(partner_bp)
+    app.register_blueprint(features_bp)
+    app.register_blueprint(onboarding_bp)
+    app.register_blueprint(openapi_bp)
 
     return app
 

@@ -7,6 +7,8 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
+    # Zero-downtime deploy: Render waits for the health check to pass before
+    # routing traffic to the new instance (blue/green behaviour).
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -18,6 +20,46 @@ services:
         generateValue: true
       - key: ALLOWED_ORIGINS
         sync: false   # set manually in Render dashboard
+
+      # Tenant / white-label
+      - key: TENANT_ID
+        value: gelateria_pro
+      - key: TENANT_NAME
+        value: Gelateria Pro
+      - key: TENANT_CURRENCY
+        value: BRL
+      - key: TENANT_LOCALE
+        value: pt_BR
+      - key: TENANT_TIMEZONE
+        value: America/Sao_Paulo
+
+      # Feature flags (toggle without redeploy via Render env-var update)
+      - key: FEATURE_MARKETPLACE
+        value: "0"
+      - key: FEATURE_FRANCHISE_PORTAL
+        value: "0"
+      - key: FEATURE_PUBLIC_API
+        value: "0"
+      - key: FEATURE_I18N
+        value: "1"
+      - key: FEATURE_AB_TEST
+        value: "0"
+      - key: FEATURE_SPIN_OFF
+        value: "0"
+
+      # Public API keys
+      - key: PARTNER_API_KEYS
+        sync: false   # set manually — never commit real keys
+
+      # App metadata
+      - key: APP_VERSION
+        value: "1.0.0"
+      - key: BASE_URL
+        sync: false   # e.g. https://gelateria-backend.onrender.com
+
+      # i18n
+      - key: DEFAULT_LANG
+        value: pt
 
 databases:
   - name: gelateria-db
