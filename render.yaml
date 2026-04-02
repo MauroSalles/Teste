@@ -6,11 +6,16 @@ services:
     name: gelateria-backend
     env: docker
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /health
+    healthCheckPath: /infra/healthz
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: gelateria-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: gelateria-redis
           property: connectionString
       - key: FLASK_ENV
         value: production
@@ -18,6 +23,8 @@ services:
         generateValue: true
       - key: ALLOWED_ORIGINS
         sync: false   # set manually in Render dashboard
+      - key: FRONTEND_URL
+        sync: false   # set to your Vercel/CDN frontend URL
 
 databases:
   - name: gelateria-db
@@ -25,3 +32,11 @@ databases:
     user: postgres
     plan: free
     postgresMajorVersion: 16
+
+# Redis managed service
+# NOTE: Render free-tier Redis is available; upgrade for persistence.
+# Alternatives: Railway Redis, Upstash (free tier), Neon (Postgres only).
+redis:
+  - name: gelateria-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
