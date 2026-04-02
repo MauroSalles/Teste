@@ -77,6 +77,55 @@ CREATE TABLE IF NOT EXISTS fidelidade (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Daily check-ins e humor (Presence First v4.0)
+CREATE TABLE IF NOT EXISTS daily_checkins (
+    id           SERIAL PRIMARY KEY,
+    user_id      INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    data         DATE NOT NULL DEFAULT CURRENT_DATE,
+    humor        VARCHAR(10), -- feliz/neutro/triste
+    streak_atual INTEGER NOT NULL DEFAULT 1,
+    UNIQUE(user_id, data)
+);
+
+-- Clube de assinaturas mensais
+CREATE TABLE IF NOT EXISTS clube_assinaturas (
+    id                 SERIAL PRIMARY KEY,
+    user_id            INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    plano              VARCHAR(20) NOT NULL, -- bronze/prata/ouro
+    status             VARCHAR(20) NOT NULL DEFAULT 'ativo',
+    data_inicio        DATE NOT NULL DEFAULT CURRENT_DATE,
+    data_renovacao     DATE,
+    beneficios_usados  INTEGER NOT NULL DEFAULT 0
+);
+
+-- Feed social da gelateria
+CREATE TABLE IF NOT EXISTS feed_posts (
+    id            SERIAL PRIMARY KEY,
+    user_id       INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    tipo          VARCHAR(30) NOT NULL DEFAULT 'manual', -- manual/conquista/streak/primeiro_pedido
+    conteudo      TEXT NOT NULL,
+    imagem_base64 TEXT,
+    curtidas      INTEGER NOT NULL DEFAULT 0,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS feed_comentarios (
+    id         SERIAL PRIMARY KEY,
+    post_id    INTEGER NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
+    user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    texto      TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Perfis públicos compartilháveis
+CREATE TABLE IF NOT EXISTS perfis_publicos (
+    id        SERIAL PRIMARY KEY,
+    user_id   INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    username  VARCHAR(50) UNIQUE NOT NULL,
+    bio       TEXT,
+    publico   BOOLEAN NOT NULL DEFAULT true
+);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
