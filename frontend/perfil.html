@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Perfil — Gelateria Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
+  <!-- Open Graph for sharing -->
+  <meta property="og:title" content="🍦 Gelateria Pro — Meu Perfil" />
+  <meta property="og:description" content="Veja meu perfil na Gelateria Pro! 🍦" />
+  <meta property="og:type" content="website" />
+  <style>
+    :root {
+      --bg: #0f0f13; --surface: #18181f; --surface2: #22222c; --surface3: #2c2c3a;
+      --accent: #7c3aed; --accent2: #a855f7; --pink: #ec4899;
+      --text: #f1f0fb; --text-muted: #8884a0; --border: #2e2e3d;
+      --green: #22c55e; --amber: #f59e0b; --radius: 14px; --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f5f3ff; --surface: #fff; --surface2: #ede9fe; --surface3: #ddd6fe;
+      --text: #1e1b4b; --text-muted: #6b7280; --border: #e5e7eb;
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(24,24,31,0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    [data-theme="light"] nav { background: rgba(255,255,255,0.85); }
+    .nav-brand {
+      font-weight: 800; font-size: 1.15em;
+      color: var(--accent2); text-decoration: none;
+    }
+    .nav-links { display:flex; gap:6px; align-items:center; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration:none; font-size:0.85em;
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-links a:hover { background: var(--surface2); color: var(--text); }
+    .theme-btn {
+      background:none; border:1px solid var(--border); color:var(--text-muted);
+      padding:5px 10px; border-radius:var(--radius-sm); cursor:pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .theme-btn:hover { border-color:var(--accent); color:var(--accent2); }
+
+    main {
+      max-width: 680px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    /* ── Profile Card ───────────────────────────────────────────────── */
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .profile-banner {
+      height: 120px;
+      background: linear-gradient(135deg, var(--accent) 0%, #9333ea 50%, var(--pink) 100%);
+      position: relative;
+    }
+    .profile-banner-pattern {
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .profile-avatar-wrap {
+      position: absolute;
+      bottom: -40px; left: 24px;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-radius: 50%;
+      border: 4px solid var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2em; font-weight: 800; color: #fff;
+    }
+    .profile-body { padding: 52px 24px 24px; }
+    .profile-name { font-size: 1.5em; font-weight: 800; margin-bottom: 4px; }
+    .profile-handle { color: var(--text-muted); font-size: 0.9em; margin-bottom: 14px; }
+    .profile-stats {
+      display: flex; gap: 24px; margin-bottom: 18px;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.4em; font-weight: 800; color: var(--accent2); }
+    .stat-label { font-size: 0.72em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .profile-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .badge-chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 0.8em; display: flex; align-items: center; gap: 5px;
+    }
+
+    .share-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; padding: 11px 24px;
+      border-radius: 24px; font-size: 0.9em; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+    }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    /* ── Recent posts ───────────────────────────────────────────────── */
+    .section-title {
+      font-size: 0.82em; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .post-item {
+      padding: 14px; border-radius: var(--radius-sm);
+      background: var(--surface2); margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+    .post-item:last-child { margin-bottom: 0; }
+    .post-content { font-size: 0.92em; line-height: 1.5; margin-bottom: 6px; }
+    .post-meta { font-size: 0.75em; color: var(--text-muted); }
+
+    .empty { text-align: center; color: var(--text-muted); padding: 28px; font-size: 0.9em; }
+
+    /* ── QR placeholder ─────────────────────────────────────────────── */
+    .qr-box {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 12px; padding: 20px;
+    }
+    .qr-visual {
+      width: 120px; height: 120px;
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3em;
+    }
+    .qr-desc { font-size: 0.82em; color: var(--text-muted); text-align: center; line-height: 1.4; }
+    .qr-url {
+      font-size: 0.78em; color: var(--accent2);
+      word-break: break-all; text-align: center;
+    }
+
+    /* ── Toast ─────────────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none;
+    }
+    .toast {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 16px; max-width: 280px;
+      display: flex; align-items: flex-start; gap: 8px;
+      box-shadow: var(--shadow); pointer-events: all;
+      animation: tIn 0.3s ease; font-size: 13px;
+    }
+    .toast.exit { animation: tOut 0.3s ease forwards; }
+    @keyframes tIn  { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
+    @keyframes tOut { to  {opacity:0;transform:translateX(40px)} }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.info    { border-left: 3px solid #3b82f6; }
+    .toast-body .toast-title { font-weight:700; font-size:0.9em; margin-bottom:2px; }
+    .toast-body .toast-msg   { font-size:0.8em; color:var(--text-muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="index.html">🍦 Gelateria Pro</a>
+    <div class="nav-links">
+      <a href="index.html">💻 Terminal</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+  </nav>
+
+  <div id="toast-container"></div>
+
+  <main>
+    <!-- Profile Card -->
+    <div class="profile-card" id="profile-card">
+      <div class="profile-banner">
+        <div class="profile-banner-pattern"></div>
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+        </div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-name" id="profile-name">Carregando…</div>
+        <div class="profile-handle" id="profile-handle">@usuario</div>
+        <div class="profile-stats">
+          <div class="stat">
+            <div class="stat-value" id="stat-streak">—</div>
+            <div class="stat-label">Streak 🔥</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-posts">—</div>
+            <div class="stat-label">Posts</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-likes">—</div>
+            <div class="stat-label">Curtidas</div>
+          </div>
+        </div>
+        <div class="profile-badges" id="profile-badges"></div>
+        <button class="share-btn" onclick="shareProfile()">📤 Compartilhar Perfil</button>
+      </div>
+    </div>
+
+    <!-- Recent posts from feed -->
+    <div class="card">
+      <div class="section-title">💬 Últimas Publicações</div>
+      <div id="posts-list">
+        <div class="empty">Carregando…</div>
+      </div>
+    </div>
+
+    <!-- QR Code de mesa -->
+    <div class="card">
+      <div class="section-title">📱 QR Code do Estabelecimento</div>
+      <div class="qr-box">
+        <div class="qr-visual">🍦</div>
+        <div class="qr-desc">Escaneie para acessar a Gelateria Pro no seu celular!</div>
+        <div class="qr-url" id="qr-url">—</div>
+        <button class="share-btn" onclick="copyQrUrl()">📋 Copiar Link</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.API_URL || (
+      ['localhost','127.0.0.1'].includes(location.hostname) ? 'http://localhost:5000' : ''
+    );
+
+    function getSessionId() {
+      let sid = localStorage.getItem('gel_session');
+      if (!sid) {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+          sid = crypto.randomUUID();
+        } else if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          const arr = new Uint8Array(16);
+          crypto.getRandomValues(arr);
+          sid = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+        } else {
+          sid = Date.now().toString(36) + Math.random().toString(36).slice(2);
+        }
+        localStorage.setItem('gel_session', sid);
+      }
+      return sid;
+    }
+    const SESSION_ID = getSessionId();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.querySelector('.theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme');
+        btn.textContent = '🌙';
+        localStorage.setItem('gel_theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light');
+        btn.textContent = '☀️';
+        localStorage.setItem('gel_theme', 'light');
+      }
+    }
+    if (localStorage.getItem('gel_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+
+    function showToast(title, msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<div class="toast-body"><div class="toast-title">${esc(title)}</div>${msg?`<div class="toast-msg">${esc(msg)}</div>`:''}</div>`;
+      c.appendChild(el);
+      setTimeout(() => { el.classList.add('exit'); setTimeout(()=>el.remove(),300); }, 3500);
+    }
+
+    function escHtml(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function loadProfile() {
+      // Load streak for this session
+      try {
+        const res = await fetch(`${API_URL}/api/checkin/status`, {
+          headers: { 'X-Session-Id': SESSION_ID }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('stat-streak').textContent = d.streak ?? 0;
+
+          // Derive display name from localStorage or fallback
+          const name = localStorage.getItem('gel_username') || 'Visitante';
+          const initials = name.slice(0,2).toUpperCase();
+          document.getElementById('profile-avatar').textContent = initials;
+          document.getElementById('profile-name').textContent = name;
+
+          // Handle field
+          const urlParams = new URLSearchParams(location.search);
+          const handleParam = urlParams.get('u') || name.toLowerCase().replace(/\s+/g,'-');
+          document.getElementById('profile-handle').textContent = `@${handleParam}`;
+          document.title = `🍦 ${name} — Gelateria Pro`;
+
+          // Badges
+          const badges = [];
+          if (d.streak >= 1)  badges.push({icon:'🏅', label:'Visitante'});
+          if (d.streak >= 3)  badges.push({icon:'🔥', label:'3 dias seguidos'});
+          if (d.streak >= 7)  badges.push({icon:'🌟', label:'Semana Perfeita'});
+          if (d.streak >= 30) badges.push({icon:'👑', label:'Mestre do Streak'});
+          if (badges.length === 0) badges.push({icon:'🌱', label:'Começando'});
+
+          document.getElementById('profile-badges').innerHTML = badges.map(b =>
+            `<div class="badge-chip">${b.icon} ${b.label}</div>`
+          ).join('');
+        }
+      } catch (_) {
+        document.getElementById('stat-streak').textContent = '0';
+        document.getElementById('profile-name').textContent = 'Visitante';
+      }
+
+      // Load public feed
+      try {
+        const res = await fetch(`${API_URL}/api/social/feed?limit=5`);
+        if (res.ok) {
+          const posts = await res.json();
+          document.getElementById('stat-posts').textContent = posts.length;
+          const totalLikes = posts.reduce((s, p) => s + (p.likes || 0), 0);
+          document.getElementById('stat-likes').textContent = totalLikes;
+
+          if (posts.length) {
+            document.getElementById('posts-list').innerHTML = posts.map(p => `
+              <div class="post-item">
+                <div class="post-content">${p.emoji || '🍦'} ${escHtml(p.content)}</div>
+                <div class="post-meta">por <strong>${escHtml(p.author)}</strong> · ${p.created_at || ''} · ❤️ ${p.likes ?? 0}</div>
+              </div>
+            `).join('');
+          } else {
+            document.getElementById('posts-list').innerHTML = '<div class="empty">Nenhuma publicação ainda. Seja o primeiro!</div>';
+          }
+        }
+      } catch (_) {
+        document.getElementById('stat-posts').textContent = '0';
+        document.getElementById('stat-likes').textContent = '0';
+        document.getElementById('posts-list').innerHTML = '<div class="empty">Feed indisponível.</div>';
+      }
+
+      // QR URL
+      const baseUrl = location.origin + location.pathname.replace('perfil.html','') + 'perfil.html';
+      document.getElementById('qr-url').textContent = baseUrl;
+    }
+
+    function shareProfile() {
+      const url = location.href;
+      if (navigator.share) {
+        navigator.share({ title: '🍦 Gelateria Pro', text: 'Veja meu perfil na Gelateria!', url }).catch(()=>{});
+      } else {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('Link copiado! 📋', 'Compartilhe com seus amigos!', 'success');
+        }).catch(() => {
+          showToast('Compartilhar', url, 'info');
+        });
+      }
+    }
+
+    function copyQrUrl() {
+      const url = document.getElementById('qr-url').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copiado! 📋', 'Compartilhe com seus clientes!', 'success');
+      }).catch(() => {
+        showToast('URL', url, 'info');
+      });
+    }
+
+    // Allow user to set a display name
+    (function initUserName() {
+      const params = new URLSearchParams(location.search);
+      const u = params.get('u');
+      if (u) {
+        localStorage.setItem('gel_username', u);
+      }
+    })();
+
+    loadProfile();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

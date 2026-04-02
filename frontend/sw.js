@@ -1,9 +1,10 @@
-// Gelateria Sistema — Service Worker (basic offline caching)
-const CACHE_NAME = 'gelateria-v1';
+// Gelateria Pro — Service Worker (offline caching)
+const CACHE_NAME = 'gelateria-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/dashboard.html',
+  '/perfil.html',
   '/style.css',
   '/script.js',
   '/manifest.json',
