@@ -136,6 +136,88 @@ class TestEstoqueAPI:
         assert resp.status_code == 400
 
 
+# ── Estoque Self-Service (estoque_sabores) ────────────────────────────────────
+
+def _estoque_sabor(**kw):
+    defaults = {
+        "id": 1, "nome": "Açaí tradicional", "volume_litros": 10.0,
+        "categoria": "açaí", "em_exposicao": True, "quantidade_atual": 5,
+        "estoque_minimo_sugestao": 10, "resposicao_rapida": True,
+        "data_atualizacao": "2026-01-01T00:00:00",
+    }
+    defaults.update(kw)
+    return defaults
+
+
+class TestEstoqueSaboresAPI:
+
+    def _mock_db(self, rows=None, row=None):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = rows if rows is not None else []
+        mock_cursor.fetchone.return_value = row
+        mock_cursor.__enter__ = lambda s: s
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.__enter__ = lambda s: s
+        mock_conn.__exit__ = MagicMock(return_value=False)
+        return mock_conn
+
+    @patch("backend.models.estoque_sabores.get_db")
+    def test_estoque_faltando(self, mock_db, client):
+        mock_db.return_value = self._mock_db(rows=[_estoque_sabor()])
+        resp = client.get("/api/estoque/faltando")
+        assert resp.status_code == 200
+        assert isinstance(resp.get_json(), list)
+
+    def test_pedido_semanal_sem_itens(self, client):
+        resp = client.post("/api/estoque/pedido-semanal", json={})
+        assert resp.status_code == 400
+
+    def test_pedido_semanal_lista_vazia(self, client):
+        resp = client.post("/api/estoque/pedido-semanal", json={"itens": []})
+        assert resp.status_code == 400
+
+    def test_pedido_semanal_item_invalido(self, client):
+        resp = client.post("/api/estoque/pedido-semanal",
+                           json={"itens": [{"estoque_sabor_id": 1, "quantidade": -1}]})
+        assert resp.status_code == 400
+
+    @patch("backend.models.estoque_sabores.get_db")
+    def test_pedido_semanal_ok(self, mock_db, client):
+        mock_db.return_value = self._mock_db(row={
+            "id": 1, "data_pedido": "2026-01-01T00:00:00",
+            "itens": [{"estoque_sabor_id": 1, "quantidade": 3}],
+            "observacao": None, "status": "pendente",
+        })
+        resp = client.post("/api/estoque/pedido-semanal",
+                           json={"itens": [{"estoque_sabor_id": 1, "quantidade": 3}]})
+        assert resp.status_code == 201
+        data = resp.get_json()
+        assert data["status"] == "pendente"
+
+    def test_atualizar_sem_itens(self, client):
+        resp = client.post("/api/estoque/atualizar", json={})
+        assert resp.status_code == 400
+
+    def test_atualizar_lista_vazia(self, client):
+        resp = client.post("/api/estoque/atualizar", json={"itens": []})
+        assert resp.status_code == 400
+
+    def test_atualizar_item_invalido(self, client):
+        resp = client.post("/api/estoque/atualizar",
+                           json={"itens": [{"estoque_sabor_id": 1, "quantidade": 0}]})
+        assert resp.status_code == 400
+
+    @patch("backend.models.estoque_sabores.get_db")
+    def test_atualizar_ok(self, mock_db, client):
+        mock_db.return_value = self._mock_db(row=_estoque_sabor(quantidade_atual=8))
+        resp = client.post("/api/estoque/atualizar",
+                           json={"itens": [{"estoque_sabor_id": 1, "quantidade": 3}]})
+        assert resp.status_code == 200
+        assert isinstance(resp.get_json(), list)
+
+
 # ── Status endpoint ────────────────────────────────────────────────────────────
 
 class TestStatusAPI:

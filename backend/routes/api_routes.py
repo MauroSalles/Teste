@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 import backend.models.sabor as sabor_model
 import backend.models.pedido as pedido_model
 import backend.models.estoque as estoque_model
+import backend.models.estoque_sabores as estoque_sabores_model
 from backend.models.fidelidade import (
     obter_pontos,
     adicionar_pontos,
@@ -119,6 +120,55 @@ def set_estoque(sabor_id):
     if not row:
         return jsonify({"error": "Sabor não encontrado"}), 404
     return jsonify(dict(row))
+
+
+# ── Estoque Self-Service (estoque_sabores) ────────────────────────────────────
+
+@api_bp.get("/estoque/faltando")
+def estoque_faltando():
+    rows = estoque_sabores_model.listar_faltando()
+    return jsonify([dict(r) for r in rows])
+
+
+@api_bp.post("/estoque/pedido-semanal")
+def pedido_semanal():
+    data = request.get_json(silent=True) or {}
+    itens = data.get("itens")
+    observacao = data.get("observacao")
+    if not isinstance(itens, list) or not itens:
+        return jsonify({"error": "itens deve ser uma lista não-vazia"}), 400
+    for item in itens:
+        if not isinstance(item, dict):
+            return jsonify({"error": "cada item deve ser um objeto"}), 400
+        try:
+            int(item["estoque_sabor_id"])
+            q = int(item["quantidade"])
+            if q <= 0:
+                raise ValueError("quantidade deve ser um inteiro positivo")
+        except (KeyError, TypeError, ValueError):
+            return jsonify({"error": "cada item requer estoque_sabor_id e quantidade (inteiro positivo)"}), 400
+    row = estoque_sabores_model.registrar_pedido_semanal(itens, observacao)
+    return jsonify(dict(row)), 201
+
+
+@api_bp.post("/estoque/atualizar")
+def atualizar_estoque():
+    data = request.get_json(silent=True) or {}
+    itens = data.get("itens")
+    if not isinstance(itens, list) or not itens:
+        return jsonify({"error": "itens deve ser uma lista não-vazia"}), 400
+    for item in itens:
+        if not isinstance(item, dict):
+            return jsonify({"error": "cada item deve ser um objeto"}), 400
+        try:
+            int(item["estoque_sabor_id"])
+            q = int(item["quantidade"])
+            if q <= 0:
+                raise ValueError("quantidade deve ser um inteiro positivo")
+        except (KeyError, TypeError, ValueError):
+            return jsonify({"error": "cada item requer estoque_sabor_id e quantidade (inteiro positivo)"}), 400
+    updated = estoque_sabores_model.registrar_remessa(itens)
+    return jsonify([dict(r) for r in updated])
 
 
 # ── Status / Dashboard summary ────────────────────────────────────────────────

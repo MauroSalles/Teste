@@ -36,7 +36,8 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 │   ├── models/
 │   │   ├── sabor.py              # CRUD sabores
 │   │   ├── pedido.py             # CRUD pedidos + relatórios
-│   │   ├── estoque.py            # CRUD estoque
+│   │   ├── estoque.py            # CRUD estoque (clássico)
+│   │   ├── estoque_sabores.py    # Inventário self-service (açaí/sorvetes)
 │   │   ├── user.py               # Auth model (scrypt hashing)
 │   │   └── fidelidade.py         # Sistema de pontos
 │   ├── routes/
@@ -50,12 +51,13 @@ Sistema completo de gerenciamento de gelateria com interface CMD web, REST API, 
 ├── frontend/
 │   ├── index.html                # Terminal CMD web UI
 │   ├── dashboard.html            # Admin dashboard
+│   ├── estoque.html              # Painel self-service de estoque
 │   ├── script.js                 # Terminal logic
 │   ├── style.css                 # Dark terminal theme + CSS variables
 │   ├── manifest.json             # PWA manifest
 │   └── sw.js                     # Service worker
 ├── database/
-│   └── schema.sql                # PostgreSQL schema (9 tabelas)
+│   └── schema.sql                # PostgreSQL schema (11 tabelas)
 ├── tests/
 │   ├── conftest.py
 │   ├── test_api_routes.py        # REST API tests
@@ -148,13 +150,111 @@ FLASK_ENV=development PYTHONPATH=. python backend/app.py
 ### Estoque
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/api/estoque` | Ver estoque |
+| GET | `/api/estoque` | Ver estoque (tabela clássica de quantidades) |
 | PUT | `/api/estoque/<sabor_id>` | Definir quantidade `{quantidade}` |
+| GET | `/api/estoque/faltando` | Sabores do self-service abaixo do mínimo |
+| POST | `/api/estoque/pedido-semanal` | Registrar pedido semanal `{itens, observacao?}` |
+| POST | `/api/estoque/atualizar` | Registrar chegada de remessa `{itens}` |
+
+---
+
+## 🧊 Gestão de Estoque Self-Service
+
+Controle completo do inventário dos freezers self-service da gelateria (açaís e sorvetes).
+
+### Tabela `estoque_sabores`
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | SERIAL PK | Identificador |
+| `nome` | VARCHAR(100) | Nome do sabor |
+| `volume_litros` | DECIMAL | Volume do pote (5.0 ou 10.0 L) |
+| `categoria` | VARCHAR | `'açaí'` ou `'sorvete'` |
+| `em_exposicao` | BOOLEAN | Se o pote está nos freezers do self-service |
+| `quantidade_atual` | INTEGER | Quantidade em estoque no momento |
+| `estoque_minimo_sugestao` | INTEGER | Mínimo recomendado antes de repor |
+| `resposicao_rapida` | BOOLEAN | Sabor de alto giro — prioridade de reposição |
+| `data_atualizacao` | TIMESTAMP | Última atualização do registro |
+
+### Sabores pré-cadastrados
+
+**Açaí (10L):** Tradicional · Grego · Com morango · Black · Zero · Trufado · Ninho · Paçoca  
+**Açaí (5L):** Cupuaçu · Banana  
+**Sorvete (10L):** Menta com chocolate · Chocolate belga · Pistache · Côco · Cappuccino · Doce de leite · Grego maracujá · Grego Cereja · Unicórnio · Pitaya · Limão · Morango · Flocos  
+**Sorvete (5L):** Manga · Abacaxi · Banana caramelizada · Paçoca · Chocolate branco · Baunilha · Laranja · Café · Goiaba · Mamão · Algodão doce · Creme de cupuaçu · Milho verde
+
+### Mínimos de estoque (sabores de alto giro)
+
+| Sabor | Volume | Mínimo |
+|-------|--------|--------|
+| Açaí tradicional | 10L | 10 |
+| Açaí grego | 10L | 6 |
+| Chocolate belga | 10L | 1 |
+| Côco | 10L | 1 |
+| Pitaya | 10L | 1 |
+
+Os demais sabores têm mínimo = 0 (sem alerta automático).
+
+### Endpoints de self-service
+
+#### `GET /api/estoque/faltando`
+Retorna os sabores cujo `quantidade_atual < estoque_minimo_sugestao`.
+
+```json
+[
+  {
+    "id": 1,
+    "nome": "Açaí tradicional",
+    "volume_litros": 10.0,
+    "categoria": "açaí",
+    "quantidade_atual": 3,
+    "estoque_minimo_sugestao": 10,
+    "resposicao_rapida": true
+  }
+]
+```
+
+#### `POST /api/estoque/pedido-semanal`
+Registra um pedido de reposição semanal (status inicial: `pendente`).
+
+```json
+{
+  "itens": [
+    { "estoque_sabor_id": 1, "quantidade": 5 },
+    { "estoque_sabor_id": 2, "quantidade": 3 }
+  ],
+  "observacao": "Reforço antes do fim de semana"
+}
+```
+
+#### `POST /api/estoque/atualizar`
+Registra a chegada de uma remessa e soma as quantidades ao estoque atual.
+
+```json
+{
+  "itens": [
+    { "estoque_sabor_id": 1, "quantidade": 10 },
+    { "estoque_sabor_id": 12, "quantidade": 2 }
+  ]
+}
+```
+
+### Frontend — `estoque.html`
+
+Painel de acompanhamento em tempo real acessível via `/frontend/estoque.html`:
+
+- **Inventário:** tabela com filtros por categoria/reposição rápida e busca por nome  
+- **Faltando:** cards dos sabores abaixo do mínimo com destaque visual  
+- **Pedido Semanal:** formulário para montar e registrar pedidos semanais  
+- **Registrar Remessa:** formulário para dar entrada de novas remessas e atualizar o estoque  
+- Atualização automática a cada 60 segundos  
+- Suporte a Dark/Light mode
+
+---
+
+## 📚 Documentação da API
 
 ### Relatórios
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/relatorios/vendas?periodo=diario` | Vendas por período (diario/semanal/mensal) |
 | GET | `/api/relatorios/sabores-populares?limit=5` | Top N sabores por pedidos |
 | GET | `/api/status` | Resumo geral do sistema |
 
