@@ -1,6 +1,7 @@
 import os
+import uuid
 import logging
-from flask import Flask
+from flask import Flask, g, request
 from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
@@ -8,6 +9,8 @@ from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
 from backend.routes.api_routes import api_bp
 from backend.routes.auth_routes import auth_bp
+from backend.routes.analytics_routes import analytics_bp
+from backend.routes.review_routes import review_bp
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +35,24 @@ def create_app():
 
     CORS(app, origins=cors_origins)
 
+    # ── Request-ID middleware ──────────────────────────────────────────────
+    @app.before_request
+    def _assign_request_id():
+        g.request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+
+    @app.after_request
+    def _add_request_id_header(response):
+        response.headers["X-Request-ID"] = getattr(g, "request_id", "")
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
     app.register_blueprint(cmd_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(review_bp)
 
     return app
 

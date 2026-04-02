@@ -77,6 +77,22 @@ CREATE TABLE IF NOT EXISTS fidelidade (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Customer reviews
+CREATE TABLE IF NOT EXISTS reviews (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    sabor_id    INTEGER NOT NULL REFERENCES sabores(id) ON DELETE CASCADE,
+    rating      SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comentario  TEXT NOT NULL,
+    criado_em   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Performance indexes
+CREATE INDEX IF NOT EXISTS idx_pedidos_data      ON pedidos (data DESC);
+CREATE INDEX IF NOT EXISTS idx_pedidos_sabor_id  ON pedidos (sabor_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_sabor_id  ON reviews (sabor_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_criado_em ON reviews (criado_em DESC);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),
@@ -85,4 +101,5 @@ INSERT INTO sabores (nome, preco) VALUES
     ('Pistache', 12.00),
     ('Limão', 9.00)
 ON CONFLICT DO NOTHING;
+
 

@@ -6,11 +6,17 @@ services:
     name: gelateria-backend
     env: docker
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /health
+    healthCheckPath: /health/live
+    autoDeploy: true
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: gelateria-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: gelateria-redis
+          type: redis
           property: connectionString
       - key: FLASK_ENV
         value: production
@@ -25,3 +31,11 @@ databases:
     user: postgres
     plan: free
     postgresMajorVersion: 16
+
+# Managed Redis (Render key-value store)
+# Uncomment when upgrading to a paid plan:
+# - type: redis
+#   name: gelateria-redis
+#   plan: free
+#   maxmemoryPolicy: allkeys-lru
+
