@@ -144,7 +144,7 @@ FLASK_ENV=development PYTHONPATH=. python backend/app.py
 3. Adicione a variável de ambiente `API_URL` = URL do backend no Render
 4. Deploy!
 
-> **Banco de dados:** Considere [Supabase](https://supabase.com) ou [Neon.tech](https://neon.tech) como alternativa ao PostgreSQL do Render (que expira em 90 dias no plano free).
+> **Banco de dados grátis permanente:** Considere [Supabase](https://supabase.com) ou [Neon.tech](https://neon.tech) como alternativa ao PostgreSQL do Render (que expira em 90 dias no plano free).
 
 ---
 
