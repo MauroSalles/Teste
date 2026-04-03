@@ -165,6 +165,16 @@ BEGIN
   END IF;
 END$$;
 
+-- ── Performance indexes ───────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_pedidos_data ON pedidos (data DESC);
+CREATE INDEX IF NOT EXISTS idx_pedidos_sabor_id ON pedidos (sabor_id);
+CREATE INDEX IF NOT EXISTS idx_pedidos_status ON pedidos (status);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
+CREATE INDEX IF NOT EXISTS idx_user_badges_user_id ON user_badges (user_id);
+CREATE INDEX IF NOT EXISTS idx_fidelidade_user_id ON fidelidade (user_id);
+CREATE INDEX IF NOT EXISTS idx_referral_referrer ON referral_conversions (referrer_id);
+CREATE INDEX IF NOT EXISTS idx_wheel_spins_user ON wheel_spins (user_id, spun_at DESC);
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),

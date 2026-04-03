@@ -19,7 +19,9 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 @api_bp.get("/sabores")
 def listar_sabores():
-    sabores = sabor_model.listar_sabores()
+    page = request.args.get("page", None, type=int)
+    per_page = request.args.get("per_page", None, type=int)
+    sabores = sabor_model.listar_sabores(page=page, per_page=per_page)
     return jsonify([dict(s) for s in sabores])
 
 
@@ -71,7 +73,11 @@ def remover_sabor(sabor_id):
 
 @api_bp.get("/pedidos")
 def listar_pedidos():
-    pedidos = pedido_model.listar_pedidos()
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 50, type=int)
+    page = max(1, page)
+    per_page = max(1, min(per_page, 100))
+    pedidos = pedido_model.listar_pedidos(page=page, per_page=per_page)
     return jsonify([dict(p) for p in pedidos])
 
 

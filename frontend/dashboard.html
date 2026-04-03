@@ -335,6 +335,12 @@
       });
     }
 
+    function esc(str) {
+      var d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
     async function loadDashboard() {
       try {
         const [statusRes, popularRes] = await Promise.all([
@@ -364,10 +370,10 @@
         } else {
           tbody.innerHTML = pedidos.map(p => `
             <tr>
-              <td>${p.id}</td>
-              <td>${p.sabor ?? p.sabor_id}</td>
-              <td>${p.quantidade}</td>
-              <td>${p.data ? fmt(p.data) : '—'}</td>
+              <td>${esc(String(p.id))}</td>
+              <td>${esc(p.sabor ?? String(p.sabor_id))}</td>
+              <td>${esc(String(p.quantidade))}</td>
+              <td>${p.data ? esc(fmt(p.data)) : '—'}</td>
             </tr>
           `).join('');
         }
@@ -378,8 +384,8 @@
           document.getElementById('section-alertas').style.display = '';
           document.getElementById('tbody-alertas').innerHTML = estoqueAlertas.map(e => `
             <tr>
-              <td>${e.nome}</td>
-              <td>${e.quantidade}</td>
+              <td>${esc(e.nome)}</td>
+              <td>${esc(String(e.quantidade))}</td>
               <td><span class="badge badge-danger">Estoque baixo</span></td>
             </tr>
           `).join('');
@@ -397,11 +403,11 @@
               const pct = Math.round((Number(p.total_pedidos || 0) / max) * 100);
               return `
                 <div class="bar-row">
-                  <div class="bar-label" title="${p.nome}">${p.nome}</div>
+                  <div class="bar-label" title="${esc(p.nome)}">${esc(p.nome)}</div>
                   <div class="bar-track">
                     <div class="bar-fill" style="width:${pct}%"></div>
                   </div>
-                  <div class="bar-value">${p.total_pedidos ?? 0} ped.</div>
+                  <div class="bar-value">${esc(String(p.total_pedidos ?? 0))} ped.</div>
                 </div>
               `;
             }).join('');

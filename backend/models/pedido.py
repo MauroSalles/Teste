@@ -4,9 +4,12 @@ METODOS_PAGAMENTO = ("dinheiro", "pix", "cartao_credito", "cartao_debito")
 STATUS_PEDIDO = ("confirmado", "cancelado", "pendente")
 
 
-def listar_pedidos():
+def listar_pedidos(page=1, per_page=50):
     with get_db() as conn:
         with conn.cursor() as cursor:
+            page = max(1, page)
+            per_page = max(1, min(per_page, 100))
+            offset = (page - 1) * per_page
             cursor.execute(
                 """
                 SELECT p.id, s.nome AS sabor, p.sabor_id, p.quantidade, p.data,
@@ -14,7 +17,9 @@ def listar_pedidos():
                 FROM pedidos p
                 JOIN sabores s ON p.sabor_id = s.id
                 ORDER BY p.data DESC
-                """
+                LIMIT %s OFFSET %s
+                """,
+                (per_page, offset),
             )
             return cursor.fetchall()
 

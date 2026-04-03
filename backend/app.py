@@ -38,6 +38,23 @@ def create_app():
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
 
+    # ── Global error handlers ─────────────────────────────────────────────
+    @app.errorhandler(404)
+    def not_found(e):
+        from flask import jsonify as _jsonify
+        return _jsonify({"error": "Recurso não encontrado"}), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        from flask import jsonify as _jsonify
+        return _jsonify({"error": "Método não permitido"}), 405
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        from flask import jsonify as _jsonify
+        logger.exception("Internal server error: %s", e)
+        return _jsonify({"error": "Erro interno do servidor"}), 500
+
     return app
 
 

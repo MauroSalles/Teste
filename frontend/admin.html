@@ -185,6 +185,12 @@
       return new Date(date).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
     }
 
+    function esc(str) {
+      var d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
     function statusBadge(status) {
       if (status === 'cancelado') return '<span class="badge badge-danger">Cancelado</span>';
       if (status === 'pendente') return '<span class="badge badge-warning">Pendente</span>';
@@ -211,10 +217,10 @@
 
         if (statusRes.ok) {
           statusRes.json().then(function(data) {
-            document.getElementById('stat-sabores').textContent = data.total_sabores || '—';
-            document.getElementById('stat-pedidos').textContent = data.total_pedidos || '—';
-            document.getElementById('stat-receita').textContent = 'R$ ' + (data.receita_total || 0).toFixed(2).replace('.', ',');
-            var alertas = data.alertas_estoque_baixo || 0;
+            document.getElementById('stat-sabores').textContent = data.total_sabores ?? '—';
+            document.getElementById('stat-pedidos').textContent = data.total_pedidos ?? '—';
+            document.getElementById('stat-receita').textContent = 'R$ ' + (data.receita_total ?? 0).toFixed(2).replace('.', ',');
+            var alertas = data.alertas_estoque_baixo ?? 0;
             var alertEl = document.getElementById('stat-alertas');
             alertEl.textContent = alertas;
             if (alertas > 0) alertEl.classList.add('danger');
@@ -226,30 +232,35 @@
             } else {
               tbody.innerHTML = pedidos.map(function(p) {
                 var cancelBtn = (p.status || 'confirmado') !== 'cancelado'
-                  ? '<button class="btn btn-danger" onclick="cancelarPedido(' + p.id + ')">Cancelar</button>'
+                  ? '<button class="btn btn-danger" onclick="cancelarPedido(' + parseInt(p.id, 10) + ')">Cancelar</button>'
                   : '<span style="color:var(--text-muted)">—</span>';
-                return '<tr><td>' + p.id + '</td><td>' + (p.sabor || p.sabor_id) + '</td><td>' + p.quantidade + '</td><td>' + (p.metodo_pagamento || 'dinheiro') + '</td><td>' + statusBadge(p.status || 'confirmado') + '</td><td>' + (p.data ? fmt(p.data) : '—') + '</td><td>' + cancelBtn + '</td></tr>';
+                return '<tr><td>' + esc(String(p.id)) + '</td><td>' + esc(p.sabor || String(p.sabor_id)) + '</td><td>' + esc(String(p.quantidade)) + '</td><td>' + esc(p.metodo_pagamento || 'dinheiro') + '</td><td>' + statusBadge(p.status || 'confirmado') + '</td><td>' + (p.data ? esc(fmt(p.data)) : '—') + '</td><td>' + cancelBtn + '</td></tr>';
               }).join('');
             }
           });
+        } else {
+          document.querySelectorAll('.stat-value').forEach(function(el) { el.textContent = '?'; });
         }
 
         if (resumoRes.ok) {
           resumoRes.json().then(function(resumo) {
-            document.getElementById('stat-acai').textContent = resumo.acai || '—';
-            document.getElementById('stat-sorvete').textContent = resumo.sorvete || '—';
-            document.getElementById('stat-rapida').textContent = resumo.reposicao_rapida || '—';
+            document.getElementById('stat-acai').textContent = resumo.acai ?? '—';
+            document.getElementById('stat-sorvete').textContent = resumo.sorvete ?? '—';
+            document.getElementById('stat-rapida').textContent = resumo.reposicao_rapida ?? '—';
             var faltando = resumo.itens_faltando || [];
             if (faltando.length > 0) {
               document.getElementById('section-alertas').style.display = '';
               document.getElementById('alertas-list').innerHTML = faltando.map(function(f) {
-                return '<div class="stat-row"><span class="stat-label">' + f.nome + ' (' + f.volume_litros + 'L) ' + (f.resposicao_rapida ? '⚡' : '') + '</span><span class="stat-value danger">Atual: ' + f.quantidade_atual + ' / Mín: ' + f.estoque_minimo_sugestao + '</span></div>';
+                return '<div class="stat-row"><span class="stat-label">' + esc(f.nome) + ' (' + esc(String(f.volume_litros)) + 'L) ' + (f.resposicao_rapida ? '⚡' : '') + '</span><span class="stat-value danger">Atual: ' + esc(String(f.quantidade_atual)) + ' / Mín: ' + esc(String(f.estoque_minimo_sugestao)) + '</span></div>';
               }).join('');
             }
           });
+        } else {
+          showToast('Erro ao carregar resumo do estoque', 'error');
         }
       }).catch(function(err) {
         document.querySelectorAll('.stat-value').forEach(function(el) { el.textContent = '?'; });
+        showToast('Erro ao conectar ao servidor', 'error');
       });
     }
 
