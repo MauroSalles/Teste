@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Estoque Self-Service — Gelateria</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #111;
+      --surface2: #1a1a1a;
+      --accent: #00ff41;
+      --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0;
+      --text-muted: #888;
+      --border: #2a2a2a;
+      --danger: #ff4444;
+      --warning: #ffaa00;
+      --success: #00cc44;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e8eaed;
+      --accent: #1a7a1a;
+      --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+    }
+
+    /* ── Nav ── */
+    nav {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav .brand { font-weight: 700; font-size: 18px; color: var(--accent); }
+    nav a { color: var(--text-muted); text-decoration: none; font-size: 14px; }
+    nav a:hover { color: var(--accent); }
+    nav a.active { color: var(--accent); font-weight: 600; }
+    .spacer { flex: 1; }
+    #theme-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--text); padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      background: none; border: none; color: var(--text-muted);
+      padding: 8px 16px; cursor: pointer; font-size: 14px; font-weight: 500;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Alert Banner ── */
+    #alert-banner {
+      background: rgba(255,68,68,0.1);
+      border: 1px solid var(--danger);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    #alert-banner.visible { display: flex; align-items: center; gap: 10px; }
+    #alert-banner .alert-icon { font-size: 20px; }
+    #alert-banner strong { color: var(--danger); }
+
+    /* ── Summary Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: var(--card-shadow);
+    }
+    .card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .card .value { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .card .value.danger { color: var(--danger); }
+    .card .value.warning { color: var(--warning); }
+
+    /* ── Filters ── */
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 5px 14px; border-radius: 20px;
+      cursor: pointer; font-size: 13px; transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--accent-dim); border-color: var(--accent);
+      color: var(--accent); font-weight: 600;
+    }
+    .search-box {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 6px 12px; border-radius: 8px;
+      font-size: 14px; outline: none; min-width: 200px;
+    }
+    .search-box:focus { border-color: var(--accent); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--surface2); color: var(--text-muted);
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    tr:hover td { background: var(--surface2); }
+
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-acai    { background: rgba(130,80,255,0.2); color: #a370f7; }
+    .badge-sorvete { background: rgba(0,180,255,0.2); color: #5ac8fa; }
+    .badge-rapida  { background: rgba(255,170,0,0.2); color: var(--warning); }
+    .badge-ok      { background: rgba(0,204,68,0.2);  color: var(--success); }
+    .badge-low     { background: rgba(255,68,68,0.2); color: var(--danger); }
+    .badge-zero    { background: rgba(136,136,136,0.2); color: var(--text-muted); }
+
+    .qty-ok   { color: var(--success); font-weight: 700; }
+    .qty-low  { color: var(--danger);  font-weight: 700; }
+    .qty-zero { color: var(--text-muted); }
+
+    /* ── Faltando panel ── */
+    #faltando-list .card {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; margin-bottom: 8px;
+    }
+    #faltando-list .card .info { display: flex; flex-direction: column; gap: 2px; }
+    #faltando-list .card .info .name { font-weight: 600; }
+    #faltando-list .card .info .meta { font-size: 12px; color: var(--text-muted); }
+    #faltando-list .card .stock { text-align: right; }
+    #faltando-list .card .stock .current { font-size: 24px; font-weight: 700; color: var(--danger); }
+    #faltando-list .card .stock .min     { font-size: 12px; color: var(--text-muted); }
+    .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 15px; }
+    .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+
+    /* ── Forms ── */
+    .form-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .form-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 12px; color: var(--text-muted); }
+    select, input[type="number"], textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 7px 10px; border-radius: 7px;
+      font-size: 14px; outline: none;
+    }
+    select:focus, input[type="number"]:focus, textarea:focus { border-color: var(--accent); }
+    textarea { width: 100%; resize: vertical; min-height: 64px; }
+    .btn {
+      padding: 8px 18px; border-radius: 7px; border: none;
+      cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    .item-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .item-entry {
+      display: flex; gap: 8px; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 8px 10px;
+    }
+    .item-entry .item-label { flex: 1; font-size: 13px; }
+    .item-entry .item-qty { width: 70px; }
+    .item-entry .remove-btn {
+      background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; line-height: 1;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 12px 20px; border-radius: 10px;
+      box-shadow: var(--card-shadow); font-size: 14px; z-index: 9999;
+      opacity: 0; transform: translateY(10px); transition: all 0.3s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { border-color: var(--success); }
+    #toast.error   { border-color: var(--danger); }
+
+    /* ── Refresh btn ── */
+    .refresh-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .refresh-btn:hover { color: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">🍦 Gelateria</span>
+    <a href="index.html">Terminal</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="estoque.html" class="active">Estoque</a>
+    <span class="spacer"></span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙</button>
+  </nav>
+
+  <div class="container">
+    <h1>📦 Estoque Self-Service</h1>
+    <p class="subtitle">Controle de freezers, reposição e pedidos semanais da gelateria.</p>
+
+    <div id="alert-banner">
+      <span class="alert-icon">⚠️</span>
+      <span><strong>Atenção:</strong> <span id="alert-msg"></span></span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="label">Total sabores</div>
+        <div class="value" id="card-total">–</div>
+      </div>
+      <div class="card">
+        <div class="label">Açaís</div>
+        <div class="value" id="card-acai">–</div>
+      </div>
+      <div class="card">
+        <div class="label">Sorvetes</div>
+        <div class="value" id="card-sorvete">–</div>
+      </div>
+      <div class="card">
+        <div class="label">Abaixo do mínimo</div>
+        <div class="value danger" id="card-faltando">–</div>
+      </div>
+      <div class="card">
+        <div class="label">Reposição rápida</div>
+        <div class="value warning" id="card-rapida">–</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('inventario')">🧊 Inventário</button>
+      <button class="tab-btn" onclick="showTab('faltando')">⚠️ Faltando</button>
+      <button class="tab-btn" onclick="showTab('pedido')">📋 Pedido Semanal</button>
+      <button class="tab-btn" onclick="showTab('remessa')">🚚 Registrar Remessa</button>
+    </div>
+
+    <!-- ── Inventário ── -->
+    <div id="tab-inventario" class="tab-panel active">
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all')">Todos</button>
+        <button class="filter-btn" onclick="setFilter('açaí')">Açaí</button>
+        <button class="filter-btn" onclick="setFilter('sorvete')">Sorvete</button>
+        <button class="filter-btn" onclick="setFilter('rapida')">⚡ Reposição rápida</button>
+        <input class="search-box" type="text" placeholder="Buscar sabor…" id="search-input" oninput="renderTable()" />
+        <button class="refresh-btn" onclick="loadEstoque()">↻ Atualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sabor</th>
+              <th>Categoria</th>
+              <th>Volume</th>
+              <th>Em exposição</th>
+              <th>Qtd. atual</th>
+              <th>Mínimo</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Faltando ── -->
+    <div id="tab-faltando" class="tab-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <span style="color:var(--text-muted);font-size:14px;">Sabores abaixo do estoque mínimo sugerido.</span>
+        <button class="refresh-btn" onclick="loadFaltando()">↻ Atualizar</button>
+      </div>
+      <div id="faltando-list"></div>
+    </div>
+
+    <!-- ── Pedido Semanal ── -->
+    <div id="tab-pedido" class="tab-panel">
+      <div class="form-section">
+        <h2>📋 Registrar Pedido Semanal</h2>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">
+          Selecione os sabores e as quantidades a pedir. O pedido será registrado como "pendente" até a remessa chegar.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sabor</label>
+            <select id="pedido-sabor"></select>
+          </div>
+          <div class="form-group">
+            <label>Quantidade</label>
+            <input type="number" id="pedido-qty" min="1" value="1" style="width:80px;" />
+          </div>
+          <button class="btn btn-secondary" onclick="addPedidoItem()">+ Adicionar</button>
+        </div>
+        <div class="item-list" id="pedido-items"></div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Observação (opcional)</label>
+          <textarea id="pedido-obs" placeholder="Ex: Pedir reforço de pitaya antes do fim de semana…"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitPedido()">✅ Enviar Pedido</button>
+      </div>
+    </div>
+
+    <!-- ── Registrar Remessa ── -->
+    <div id="tab-remessa" class="tab-panel">
+      <div class="form-section">
+        <h2>🚚 Registrar Chegada de Remessa</h2>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">
+          Informe os sabores recebidos e as quantidades. O estoque será atualizado imediatamente.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sabor</label>
+            <select id="remessa-sabor"></select>
+          </div>
+          <div class="form-group">
+            <label>Quantidade recebida</label>
+            <input type="number" id="remessa-qty" min="1" value="1" style="width:80px;" />
+          </div>
+          <button class="btn btn-secondary" onclick="addRemessaItem()">+ Adicionar</button>
+        </div>
+        <div class="item-list" id="remessa-items"></div>
+        <button class="btn btn-primary" onclick="submitRemessa()">🚚 Confirmar Remessa</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const API = '/api/estoque';
+    let allFlavors = [];
+    let currentFilter = 'all';
+    let pedidoItems = [];
+    let remessaItems = [];
+
+    // ── Theme ──
+    function toggleTheme() {
+      const light = document.documentElement.getAttribute('data-theme') === 'light';
+      document.documentElement.setAttribute('data-theme', light ? '' : 'light');
+      document.getElementById('theme-btn').textContent = light ? '🌙' : '☀️';
+      localStorage.setItem('theme', light ? 'dark' : 'light');
+    }
+    (function initTheme() {
+      const t = localStorage.getItem('theme');
+      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); document.getElementById('theme-btn').textContent = '☀️'; }
+    })();
+
+    // ── Toast ──
+    let toastTimer;
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'show ' + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+    }
+
+    // ── Tabs ──
+    function showTab(name) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      event.target.classList.add('active');
+      if (name === 'faltando') loadFaltando();
+    }
+
+    // ── Filters ──
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      renderTable();
+    }
+
+    // ── Load estoque ──
+    async function loadEstoque() {
+      try {
+        const r = await fetch(API);
+        if (!r.ok) throw new Error('Erro ' + r.status);
+        allFlavors = await r.json();
+        updateCards();
+        renderTable();
+        populateSelects();
+      } catch (e) {
+        showToast('Falha ao carregar estoque: ' + e.message, 'error');
+      }
+    }
+
+    function updateCards() {
+      const acai    = allFlavors.filter(f => f.categoria === 'açaí').length;
+      const sorvete = allFlavors.filter(f => f.categoria === 'sorvete').length;
+      const faltando = allFlavors.filter(f => f.estoque_minimo_sugestao > 0 && f.quantidade_atual < f.estoque_minimo_sugestao).length;
+      const rapida  = allFlavors.filter(f => f.resposicao_rapida).length;
+      document.getElementById('card-total').textContent    = allFlavors.length;
+      document.getElementById('card-acai').textContent     = acai;
+      document.getElementById('card-sorvete').textContent  = sorvete;
+      document.getElementById('card-faltando').textContent = faltando;
+      document.getElementById('card-rapida').textContent   = rapida;
+
+      const banner = document.getElementById('alert-banner');
+      const msg    = document.getElementById('alert-msg');
+      if (faltando > 0) {
+        msg.textContent = faltando + ' sabor(es) abaixo do estoque mínimo! Verifique a aba "Faltando".';
+        banner.classList.add('visible');
+      } else {
+        banner.classList.remove('visible');
+      }
+    }
+
+    function renderTable() {
+      const q = (document.getElementById('search-input').value || '').toLowerCase();
+      let rows = allFlavors;
+      if (currentFilter === 'açaí')    rows = rows.filter(f => f.categoria === 'açaí');
+      if (currentFilter === 'sorvete') rows = rows.filter(f => f.categoria === 'sorvete');
+      if (currentFilter === 'rapida')  rows = rows.filter(f => f.resposicao_rapida);
+      if (q) rows = rows.filter(f => f.nome.toLowerCase().includes(q));
+
+      const tbody = document.getElementById('table-body');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum item encontrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(f => {
+        const catBadge = f.categoria === 'açaí'
+          ? '<span class="badge badge-acai">Açaí</span>'
+          : '<span class="badge badge-sorvete">Sorvete</span>';
+        const rapida = f.resposicao_rapida ? '<span class="badge badge-rapida">⚡ Rápida</span>' : '';
+        const qtyCls = f.quantidade_atual === 0 ? 'qty-zero' : (f.estoque_minimo_sugestao > 0 && f.quantidade_atual < f.estoque_minimo_sugestao ? 'qty-low' : 'qty-ok');
+        const status = f.estoque_minimo_sugestao === 0
+          ? '<span class="badge badge-zero">—</span>'
+          : (f.quantidade_atual < f.estoque_minimo_sugestao
+            ? '<span class="badge badge-low">⬇ Baixo</span>'
+            : '<span class="badge badge-ok">✔ OK</span>');
+        return `<tr>
+          <td>${f.nome} ${rapida}</td>
+          <td>${catBadge}</td>
+          <td>${f.volume_litros}L</td>
+          <td>${f.em_exposicao ? '✅' : '—'}</td>
+          <td class="${qtyCls}">${f.quantidade_atual}</td>
+          <td>${f.estoque_minimo_sugestao || '—'}</td>
+          <td>${status}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function populateSelects() {
+      const opts = allFlavors.map(f => `<option value="${f.id}">${f.nome} (${f.volume_litros}L)</option>`).join('');
+      document.getElementById('pedido-sabor').innerHTML = opts;
+      document.getElementById('remessa-sabor').innerHTML = opts;
+    }
+
+    // ── Faltando ──
+    async function loadFaltando() {
+      try {
+        const r = await fetch(API + '/faltando');
+        if (!r.ok) throw new Error('Erro ' + r.status);
+        const data = await r.json();
+        const el = document.getElementById('faltando-list');
+        if (!data.length) {
+          el.innerHTML = '<div class="empty-state"><div class="icon">✅</div>Todos os sabores com mínimo definido estão em dia!</div>';
+          return;
+        }
+        el.innerHTML = data.map(f => `
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;margin-bottom:8px;">
+            <div class="info">
+              <div class="name">${f.nome} ${f.resposicao_rapida ? '⚡' : ''}</div>
+              <div class="meta">${f.categoria} · ${f.volume_litros}L · ${f.em_exposicao ? 'Em exposição' : 'Estoque'}</div>
+            </div>
+            <div class="stock" style="text-align:right;">
+              <div class="current" style="font-size:24px;font-weight:700;color:var(--danger);">${f.quantidade_atual}</div>
+              <div class="min" style="font-size:12px;color:var(--text-muted);">mín: ${f.estoque_minimo_sugestao}</div>
+            </div>
+          </div>`).join('');
+      } catch (e) {
+        showToast('Falha ao carregar faltando: ' + e.message, 'error');
+      }
+    }
+
+    // ── Pedido Semanal ──
+    function addPedidoItem() {
+      const sel = document.getElementById('pedido-sabor');
+      const qty = parseInt(document.getElementById('pedido-qty').value, 10);
+      if (!sel.value || !(qty > 0)) return showToast('Selecione um sabor e quantidade válida.', 'error');
+      const id = parseInt(sel.value, 10);
+      const label = sel.options[sel.selectedIndex].text;
+      if (pedidoItems.find(i => i.estoque_sabor_id === id)) return showToast('Sabor já adicionado.', 'error');
+      pedidoItems.push({ estoque_sabor_id: id, quantidade: qty, label });
+      renderPedidoItems();
+    }
+
+    function renderPedidoItems() {
+      const el = document.getElementById('pedido-items');
+      el.innerHTML = pedidoItems.map((item, idx) => `
+        <div class="item-entry">
+          <span class="item-label">${item.label}</span>
+          <input class="item-qty" type="number" min="1" value="${item.quantidade}"
+            onchange="pedidoItems[${idx}].quantidade = parseInt(this.value,10)||1" />
+          <button class="remove-btn" onclick="removePedidoItem(${idx})">✕</button>
+        </div>`).join('');
+    }
+
+    function removePedidoItem(idx) { pedidoItems.splice(idx, 1); renderPedidoItems(); }
+
+    async function submitPedido() {
+      if (!pedidoItems.length) return showToast('Adicione ao menos um item.', 'error');
+      const obs = document.getElementById('pedido-obs').value.trim() || null;
+      const payload = { itens: pedidoItems.map(({ estoque_sabor_id, quantidade }) => ({ estoque_sabor_id, quantidade })), observacao: obs };
+      try {
+        const r = await fetch(API + '/pedido-semanal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!r.ok) { const e = await r.json(); throw new Error(e.error || r.status); }
+        showToast('Pedido semanal registrado com sucesso! ✅', 'success');
+        pedidoItems = [];
+        renderPedidoItems();
+        document.getElementById('pedido-obs').value = '';
+      } catch (e) {
+        showToast('Erro ao registrar pedido: ' + e.message, 'error');
+      }
+    }
+
+    // ── Remessa ──
+    function addRemessaItem() {
+      const sel = document.getElementById('remessa-sabor');
+      const qty = parseInt(document.getElementById('remessa-qty').value, 10);
+      if (!sel.value || !(qty > 0)) return showToast('Selecione um sabor e quantidade válida.', 'error');
+      const id = parseInt(sel.value, 10);
+      const label = sel.options[sel.selectedIndex].text;
+      if (remessaItems.find(i => i.estoque_sabor_id === id)) return showToast('Sabor já adicionado.', 'error');
+      remessaItems.push({ estoque_sabor_id: id, quantidade: qty, label });
+      renderRemessaItems();
+    }
+
+    function renderRemessaItems() {
+      const el = document.getElementById('remessa-items');
+      el.innerHTML = remessaItems.map((item, idx) => `
+        <div class="item-entry">
+          <span class="item-label">${item.label}</span>
+          <input class="item-qty" type="number" min="1" value="${item.quantidade}"
+            onchange="remessaItems[${idx}].quantidade = parseInt(this.value,10)||1" />
+          <button class="remove-btn" onclick="removeRemessaItem(${idx})">✕</button>
+        </div>`).join('');
+    }
+
+    function removeRemessaItem(idx) { remessaItems.splice(idx, 1); renderRemessaItems(); }
+
+    async function submitRemessa() {
+      if (!remessaItems.length) return showToast('Adicione ao menos um item.', 'error');
+      const payload = { itens: remessaItems.map(({ estoque_sabor_id, quantidade }) => ({ estoque_sabor_id, quantidade })) };
+      try {
+        const r = await fetch(API + '/atualizar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!r.ok) { const e = await r.json(); throw new Error(e.error || r.status); }
+        showToast('Remessa registrada! Estoque atualizado. 🚚', 'success');
+        remessaItems = [];
+        renderRemessaItems();
+        loadEstoque();
+      } catch (e) {
+        showToast('Erro ao registrar remessa: ' + e.message, 'error');
+      }
+    }
+
+    // ── Init ──
+    loadEstoque();
+    setInterval(loadEstoque, 60000);
+  </script>
+</body>
+</html>
