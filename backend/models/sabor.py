@@ -1,10 +1,19 @@
 from backend.database import get_db
 
 
-def listar_sabores():
+def listar_sabores(page=None, per_page=None):
     with get_db() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM sabores ORDER BY nome")
+            if page is not None and per_page is not None:
+                page = max(1, page)
+                per_page = max(1, min(per_page, 100))
+                offset = (page - 1) * per_page
+                cursor.execute(
+                    "SELECT * FROM sabores ORDER BY nome LIMIT %s OFFSET %s",
+                    (per_page, offset),
+                )
+            else:
+                cursor.execute("SELECT * FROM sabores ORDER BY nome")
             return cursor.fetchall()
 
 

@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 from backend.routes.cmd_routes import cmd_bp
@@ -37,6 +37,20 @@ def create_app():
     app.register_blueprint(gamification_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
+
+    # ── Global error handlers ─────────────────────────────────────────────
+    @app.errorhandler(404)
+    def not_found(e):
+        return jsonify({"error": "Recurso não encontrado"}), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return jsonify({"error": "Método não permitido"}), 405
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        logger.exception("Internal server error: %s", e)
+        return jsonify({"error": "Erro interno do servidor"}), 500
 
     return app
 
