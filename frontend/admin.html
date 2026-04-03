@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛠️ Admin — Gelateria Sistema</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #111; --surface2: #1a1a1a;
+      --accent: #00ff41; --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0; --text-muted: #888; --border: #2a2a2a;
+      --danger: #ff4444; --warning: #ffaa00; --success: #00cc44;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+      --accent: #1a7a1a; --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a; --text-muted: #666; --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }
+
+    nav { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { font-weight: 700; font-size: 1.2em; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 12px; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9em; padding: 6px 12px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-dim); color: var(--accent); }
+    #theme-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 1em; }
+    #theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+    h1 { font-size: 1.5em; margin-bottom: 8px; color: var(--accent); }
+    .subtitle { color: var(--text-muted); font-size: 0.9em; margin-bottom: 24px; }
+    h2 { font-size: 1.15em; margin-bottom: 12px; color: var(--text); }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: var(--card-shadow); cursor: pointer; transition: border-color 0.2s, transform 0.15s; text-decoration: none; display: block; }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card-icon { font-size: 2em; margin-bottom: 8px; }
+    .card-title { font-weight: 700; font-size: 1em; margin-bottom: 4px; color: var(--text); }
+    .card-desc { font-size: 0.85em; color: var(--text-muted); }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
+    .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--text-muted); }
+    .stat-value { font-weight: 700; color: var(--accent); }
+    .stat-value.danger { color: var(--danger); }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.78em; font-weight: 600; }
+    .badge-ok { background: rgba(0,204,68,0.15); color: var(--success); }
+    .badge-warning { background: rgba(255,170,0,0.15); color: var(--warning); }
+    .badge-danger { background: rgba(255,68,68,0.15); color: var(--danger); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: var(--accent-dim); }
+    .empty { text-align: center; color: var(--text-muted); padding: 32px; }
+    .loading { animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.85em; font-weight: 600; transition: opacity 0.2s; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 10px; box-shadow: var(--card-shadow); font-size: 14px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { border-color: var(--success); }
+    #toast.error { border-color: var(--danger); }
+
+    @media (max-width: 600px) { .cards { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="admin.html">🍦 Gelateria</a>
+    <div class="nav-links">
+      <a href="index.html">💻 Terminal</a>
+      <a href="admin.html" class="active">🛠️ Admin</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="estoque.html">📦 Estoque</a>
+      <a href="relatorios.html">📈 Relatórios</a>
+      <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    </div>
+  </nav>
+
+  <main>
+    <h1>🛠️ Painel Administrativo</h1>
+    <p class="subtitle">Gestão centralizada: vendas, estoque, relatórios e suporte.</p>
+
+    <div class="cards">
+      <a class="card" href="dashboard.html">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Dashboard</div>
+        <div class="card-desc">Visão geral de vendas, pedidos e receita.</div>
+      </a>
+      <a class="card" href="estoque.html">
+        <div class="card-icon">📦</div>
+        <div class="card-title">Estoque</div>
+        <div class="card-desc">Controle de freezers, reposição e pedidos semanais.</div>
+      </a>
+      <a class="card" href="relatorios.html">
+        <div class="card-icon">📈</div>
+        <div class="card-title">Relatórios &amp; Vendas</div>
+        <div class="card-desc">Relatórios de vendas, sabores populares e gestão de pedidos.</div>
+      </a>
+      <a class="card" href="index.html">
+        <div class="card-icon">💻</div>
+        <div class="card-title">Terminal</div>
+        <div class="card-desc">Interface de linha de comando para operações rápidas.</div>
+      </a>
+    </div>
+
+    <div class="section">
+      <h2>📋 Resumo do Sistema</h2>
+      <div id="system-stats">
+        <div class="stat-row"><span class="stat-label">Sabores cadastrados</span><span class="stat-value" id="stat-sabores">—</span></div>
+        <div class="stat-row"><span class="stat-label">Total de pedidos</span><span class="stat-value" id="stat-pedidos">—</span></div>
+        <div class="stat-row"><span class="stat-label">Receita total estimada</span><span class="stat-value" id="stat-receita">—</span></div>
+        <div class="stat-row"><span class="stat-label">Alertas de estoque baixo</span><span class="stat-value" id="stat-alertas">—</span></div>
+        <div class="stat-row"><span class="stat-label">Sabores self-service (açaí)</span><span class="stat-value" id="stat-acai">—</span></div>
+        <div class="stat-row"><span class="stat-label">Sabores self-service (sorvete)</span><span class="stat-value" id="stat-sorvete">—</span></div>
+        <div class="stat-row"><span class="stat-label">Itens reposição rápida</span><span class="stat-value" id="stat-rapida">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📋 Pedidos Recentes <small style="font-weight:400;color:var(--text-muted);">(editável)</small></h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Sabor</th><th>Qtd</th><th>Pagamento</th><th>Status</th><th>Data</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="tbody-pedidos">
+            <tr><td colspan="7" class="empty loading">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section" id="section-alertas" style="display:none">
+      <h2>⚠️ Alertas de Estoque Self-Service</h2>
+      <div id="alertas-list"></div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    const API_URL = window.API_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000' : ''
+    );
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️'; localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('theme-btn').textContent = '☀️';
+    }
+
+    let toastTimer;
+    function showToast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = 'show ' + (type || 'success');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function() { el.className = ''; }, 3000);
+    }
+
+    function fmt(date) {
+      return new Date(date).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    function statusBadge(status) {
+      if (status === 'cancelado') return '<span class="badge badge-danger">Cancelado</span>';
+      if (status === 'pendente') return '<span class="badge badge-warning">Pendente</span>';
+      return '<span class="badge badge-ok">Confirmado</span>';
+    }
+
+    function cancelarPedido(id) {
+      if (!confirm('Cancelar pedido #' + id + '?')) return;
+      fetch(API_URL + '/api/pedidos/' + id, { method: 'DELETE' })
+        .then(function(r) {
+          if (!r.ok) return r.json().then(function(e) { throw new Error(e.error || r.status); });
+          showToast('Pedido #' + id + ' cancelado!', 'success');
+          loadAdmin();
+        })
+        .catch(function(e) { showToast('Erro: ' + e.message, 'error'); });
+    }
+
+    function loadAdmin() {
+      Promise.all([
+        fetch(API_URL + '/api/status'),
+        fetch(API_URL + '/api/estoque/sabores/resumo'),
+      ]).then(function(responses) {
+        var statusRes = responses[0], resumoRes = responses[1];
+
+        if (statusRes.ok) {
+          statusRes.json().then(function(data) {
+            document.getElementById('stat-sabores').textContent = data.total_sabores || '—';
+            document.getElementById('stat-pedidos').textContent = data.total_pedidos || '—';
+            document.getElementById('stat-receita').textContent = 'R$ ' + (data.receita_total || 0).toFixed(2).replace('.', ',');
+            var alertas = data.alertas_estoque_baixo || 0;
+            var alertEl = document.getElementById('stat-alertas');
+            alertEl.textContent = alertas;
+            if (alertas > 0) alertEl.classList.add('danger');
+
+            var tbody = document.getElementById('tbody-pedidos');
+            var pedidos = data.pedidos_recentes || [];
+            if (!pedidos.length) {
+              tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum pedido ainda.</td></tr>';
+            } else {
+              tbody.innerHTML = pedidos.map(function(p) {
+                var cancelBtn = (p.status || 'confirmado') !== 'cancelado'
+                  ? '<button class="btn btn-danger" onclick="cancelarPedido(' + p.id + ')">Cancelar</button>'
+                  : '<span style="color:var(--text-muted)">—</span>';
+                return '<tr><td>' + p.id + '</td><td>' + (p.sabor || p.sabor_id) + '</td><td>' + p.quantidade + '</td><td>' + (p.metodo_pagamento || 'dinheiro') + '</td><td>' + statusBadge(p.status || 'confirmado') + '</td><td>' + (p.data ? fmt(p.data) : '—') + '</td><td>' + cancelBtn + '</td></tr>';
+              }).join('');
+            }
+          });
+        }
+
+        if (resumoRes.ok) {
+          resumoRes.json().then(function(resumo) {
+            document.getElementById('stat-acai').textContent = resumo.acai || '—';
+            document.getElementById('stat-sorvete').textContent = resumo.sorvete || '—';
+            document.getElementById('stat-rapida').textContent = resumo.reposicao_rapida || '—';
+            var faltando = resumo.itens_faltando || [];
+            if (faltando.length > 0) {
+              document.getElementById('section-alertas').style.display = '';
+              document.getElementById('alertas-list').innerHTML = faltando.map(function(f) {
+                return '<div class="stat-row"><span class="stat-label">' + f.nome + ' (' + f.volume_litros + 'L) ' + (f.resposicao_rapida ? '⚡' : '') + '</span><span class="stat-value danger">Atual: ' + f.quantidade_atual + ' / Mín: ' + f.estoque_minimo_sugestao + '</span></div>';
+              }).join('');
+            }
+          });
+        }
+      }).catch(function(err) {
+        document.querySelectorAll('.stat-value').forEach(function(el) { el.textContent = '?'; });
+      });
+    }
+
+    loadAdmin();
+    setInterval(loadAdmin, 60000);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>

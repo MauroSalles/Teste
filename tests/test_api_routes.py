@@ -107,6 +107,79 @@ class TestPedidosAPI:
         resp = client.post("/api/pedidos", json={"sabor_id": 1, "quantidade": -1})
         assert resp.status_code == 400
 
+    def test_criar_pedido_metodo_invalido(self, client):
+        resp = client.post("/api/pedidos", json={
+            "sabor_id": 1, "quantidade": 2, "metodo_pagamento": "bitcoin"
+        })
+        assert resp.status_code == 400
+
+    @patch("backend.models.pedido.get_db")
+    def test_cancelar_pedido_ok(self, mock_db, client):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {
+            "id": 1, "sabor_id": 1, "quantidade": 2,
+            "metodo_pagamento": "dinheiro", "status": "cancelado",
+            "observacao": None,
+        }
+        mock_cursor.__enter__ = lambda s: s
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.__enter__ = lambda s: s
+        mock_conn.__exit__ = MagicMock(return_value=False)
+        mock_db.return_value = mock_conn
+
+        resp = client.delete("/api/pedidos/1")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["message"] == "Pedido cancelado com sucesso"
+
+    @patch("backend.models.pedido.get_db")
+    def test_cancelar_pedido_nao_encontrado(self, mock_db, client):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = None
+        mock_cursor.__enter__ = lambda s: s
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.__enter__ = lambda s: s
+        mock_conn.__exit__ = MagicMock(return_value=False)
+        mock_db.return_value = mock_conn
+
+        resp = client.delete("/api/pedidos/9999")
+        assert resp.status_code == 404
+
+    @patch("backend.models.pedido.get_db")
+    def test_atualizar_pedido_ok(self, mock_db, client):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {
+            "id": 1, "sabor_id": 1, "quantidade": 5,
+            "metodo_pagamento": "pix", "status": "confirmado",
+            "observacao": None,
+        }
+        mock_cursor.__enter__ = lambda s: s
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.__enter__ = lambda s: s
+        mock_conn.__exit__ = MagicMock(return_value=False)
+        mock_db.return_value = mock_conn
+
+        resp = client.put("/api/pedidos/1", json={"metodo_pagamento": "pix"})
+        assert resp.status_code == 200
+
+    def test_atualizar_pedido_status_invalido(self, client):
+        resp = client.put("/api/pedidos/1", json={"status": "finalizado"})
+        assert resp.status_code == 400
+
+    def test_atualizar_pedido_metodo_invalido(self, client):
+        resp = client.put("/api/pedidos/1", json={"metodo_pagamento": "bitcoin"})
+        assert resp.status_code == 400
+
+    def test_atualizar_pedido_quantidade_invalida(self, client):
+        resp = client.put("/api/pedidos/1", json={"quantidade": -3})
+        assert resp.status_code == 400
+
 
 # ── Estoque ───────────────────────────────────────────────────────────────────
 
@@ -162,6 +235,33 @@ class TestEstoqueSaboresAPI:
         mock_conn.__enter__ = lambda s: s
         mock_conn.__exit__ = MagicMock(return_value=False)
         return mock_conn
+
+    @patch("backend.models.estoque_sabores.get_db")
+    def test_listar_estoque_sabores(self, mock_db, client):
+        mock_db.return_value = self._mock_db(rows=[_estoque_sabor()])
+        resp = client.get("/api/estoque/sabores")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert data[0]["nome"] == "Açaí tradicional"
+
+    @patch("backend.models.estoque_sabores.get_db")
+    def test_resumo_estoque_sabores(self, mock_db, client):
+        mock_db.return_value = self._mock_db(rows=[
+            _estoque_sabor(),
+            _estoque_sabor(id=2, nome="Chocolate belga", categoria="sorvete",
+                           quantidade_atual=0, estoque_minimo_sugestao=1,
+                           resposicao_rapida=True),
+        ])
+        resp = client.get("/api/estoque/sabores/resumo")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["total"] == 2
+        assert data["acai"] == 1
+        assert data["sorvete"] == 1
+        assert data["faltando"] == 2
+        assert data["reposicao_rapida"] == 2
 
     @patch("backend.models.estoque_sabores.get_db")
     def test_estoque_faltando(self, mock_db, client):
