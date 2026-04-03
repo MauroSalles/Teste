@@ -52,7 +52,11 @@ def atualizar_pedido(pedido_id, quantidade=None, metodo_pagamento=None,
     """Update editable fields of an existing order. Returns updated row or None."""
     with get_db() as conn:
         with conn.cursor() as cursor:
-            # Build SET clause dynamically
+            # Build SET clause dynamically — column names are hardcoded
+            # string literals, never user input. Values use %s placeholders.
+            _ALLOWED_COLUMNS = {
+                "quantidade", "metodo_pagamento", "status", "observacao",
+            }
             sets = []
             params = []
             if quantidade is not None:
