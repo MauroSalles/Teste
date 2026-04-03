@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking — Gelateria Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 0; }
+    #page { max-width: 860px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--bg-header); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
+    .page-header h1 { font-size: 1.2em; }
+    .nav-links { display: flex; gap: 10px; align-items: center; }
+    .nav-links a { color: var(--text-primary); text-decoration: none; font-size: 0.85em; border: 1px solid var(--border-color); padding: 3px 10px; border-radius: 4px; transition: background 0.2s; }
+    .nav-links a:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    .section { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .section h2 { font-size: 1em; margin-bottom: 16px; }
+
+    /* Leaderboard */
+    .rank-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-medal { font-size: 1.4em; width: 36px; text-align: center; flex-shrink: 0; }
+    .rank-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-header); border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1em; flex-shrink: 0; }
+    .rank-info { flex: 1; }
+    .rank-nome { font-size: 0.95em; }
+    .rank-xp { font-size: 0.78em; color: var(--text-muted); }
+    .xp-bar-wrap { background: var(--bg-header); height: 6px; border-radius: 3px; width: 120px; flex-shrink: 0; }
+    .xp-bar { height: 100%; border-radius: 3px; background: var(--border-color); }
+
+    /* Badges */
+    .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge-item { background: var(--bg-header); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 90px; font-size: 0.85em; }
+    .badge-item .badge-icon { font-size: 1.8em; display: block; margin-bottom: 4px; }
+    .badge-item.locked { opacity: 0.3; filter: grayscale(1); }
+    .badge-item .badge-req { font-size: 0.72em; color: var(--text-muted); }
+
+    /* Challenges */
+    .challenge-item { padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+    .challenge-item:last-child { border-bottom: none; }
+    .challenge-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .challenge-name { font-size: 0.9em; }
+    .challenge-xp { font-size: 0.78em; color: var(--text-muted); }
+    .progress-bar { background: var(--bg-header); height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--border-color); border-radius: 4px; transition: width 0.6s ease; }
+
+    /* Profile lookup */
+    .input-row { display: flex; gap: 8px; }
+    input.uid-input { background: var(--bg-header); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-family: inherit; flex: 1; }
+    .btn { background: var(--btn-hover-bg); color: var(--btn-hover-text); border: none; padding: 8px 18px; border-radius: 6px; font-family: inherit; cursor: pointer; }
+
+    /* Confetti */
+    .confetti-piece { position: fixed; width: 10px; height: 10px; top: -20px; border-radius: 2px; animation: fall 2s ease-in forwards; }
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+  </style>
+</head>
+<body>
+<div id="page">
+  <header class="page-header">
+    <h1>🏆 Ranking & Conquistas</h1>
+    <div class="nav-links">
+      <a href="index.html">⬅ Terminal</a>
+      <a href="cardapio.html">🍦 Cardápio</a>
+      <button onclick="toggleTheme()" style="background:transparent;border:1px solid var(--border-color);color:var(--text-primary);padding:3px 10px;cursor:pointer;border-radius:4px;font-family:inherit;">🌙</button>
+    </div>
+  </header>
+
+  <!-- Profile lookup -->
+  <div class="section">
+    <h2>👤 Ver Perfil do Jogador</h2>
+    <div class="input-row">
+      <input class="uid-input" type="number" id="uid-input" placeholder="ID do usuário (ex: 1)" min="1" />
+      <button class="btn" onclick="loadProfile()">Buscar</button>
+    </div>
+    <div id="profile-info" style="margin-top:14px;display:none;">
+      <p id="p-xp" style="font-size:1.1em;"></p>
+      <p id="p-level" style="color:var(--text-muted);font-size:0.9em;margin-top:4px;"></p>
+      <h3 style="font-size:0.9em;margin:12px 0 8px;">Badges Conquistados</h3>
+      <div class="badge-grid" id="p-badges-earned"></div>
+      <h3 style="font-size:0.9em;margin:12px 0 8px;opacity:0.5;">Bloqueados</h3>
+      <div class="badge-grid" id="p-badges-locked"></div>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="section">
+    <h2>🥇 Top 10 Jogadores</h2>
+    <div id="leaderboard"><p style="color:var(--text-muted)">Carregando...</p></div>
+  </div>
+
+  <!-- Challenges -->
+  <div class="section">
+    <h2>🎯 Desafios Ativos</h2>
+    <div id="challenges-list"><p style="color:var(--text-muted)">Carregando...</p></div>
+  </div>
+</div>
+
+<script>
+const API = window.API_URL || "http://localhost:5000";
+
+function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); localStorage.setItem("theme", t); }
+function toggleTheme() { applyTheme(document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light"); }
+applyTheme(localStorage.getItem("theme") || "dark");
+
+async function loadRanking() {
+  try {
+    const r = await fetch(`${API}/api/game/ranking`);
+    const data = await r.json();
+    const el = document.getElementById("leaderboard");
+    if (!data.length) { el.innerHTML = "<p style='color:var(--text-muted)'>Sem jogadores ainda.</p>"; return; }
+    el.innerHTML = data.map(p => `
+      <div class="rank-row">
+        <div class="rank-medal">${p.medal}</div>
+        <div class="rank-avatar">${(p.nome || "?")[0].toUpperCase()}</div>
+        <div class="rank-info">
+          <div class="rank-nome">${p.nome}</div>
+          <div class="rank-xp">${p.xp} XP · Nível ${p.nivel}</div>
+        </div>
+        <div class="xp-bar-wrap"><div class="xp-bar" style="width:${Math.min(100, p.xp / 100)}%"></div></div>
+      </div>`).join("");
+  } catch { document.getElementById("leaderboard").innerHTML = "<p style='color:var(--text-muted)'>Erro ao carregar ranking.</p>"; }
+}
+
+async function loadChallenges() {
+  try {
+    const r = await fetch(`${API}/api/game/desafios`);
+    const data = await r.json();
+    document.getElementById("challenges-list").innerHTML = data.map(d => `
+      <div class="challenge-item">
+        <div class="challenge-head">
+          <span class="challenge-name">${d.icone} ${d.nome}</span>
+          <span class="challenge-xp">+${d.xp} XP</span>
+        </div>
+        <p style="font-size:0.82em;color:var(--text-muted);margin-bottom:6px;">${d.descricao}</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      </div>`).join("");
+  } catch { document.getElementById("challenges-list").innerHTML = "<p style='color:var(--text-muted)'>Erro ao carregar desafios.</p>"; }
+}
+
+async function loadProfile() {
+  const uid = parseInt(document.getElementById("uid-input").value);
+  if (!uid) { alert("Informe um ID válido."); return; }
+  try {
+    const r = await fetch(`${API}/api/game/perfil/${uid}`);
+    const d = await r.json();
+    document.getElementById("p-xp").textContent = `⚡ ${d.xp} XP`;
+    document.getElementById("p-level").textContent = `Nível ${d.nivel} — ${d.titulo} · Próximo nível: ${d.proximo_nivel_xp} XP`;
+    const prevCount = (d.badges_conquistados || []).length;
+    document.getElementById("p-badges-earned").innerHTML = (d.badges_conquistados || []).map(b =>
+      `<div class="badge-item"><span class="badge-icon">${b.icone}</span>${b.nome}<br><span class="badge-req">${b.xp_requerido} XP</span></div>`).join("") || "<em style='color:var(--text-muted)'>Nenhum ainda.</em>";
+    document.getElementById("p-badges-locked").innerHTML = (d.badges_bloqueados || []).map(b =>
+      `<div class="badge-item locked"><span class="badge-icon">${b.icone}</span>${b.nome}<br><span class="badge-req">${b.xp_requerido} XP</span></div>`).join("");
+    document.getElementById("profile-info").style.display = "block";
+    if (prevCount > 0) confetti();
+  } catch { alert("Erro ao buscar perfil."); }
+}
+
+function confetti() {
+  const colors = ["#ff0", "#0f0", "#0ff", "#f0f", "#f80"];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = Math.random() * 1 + "s";
+    el.style.animationDuration = (1.5 + Math.random()) + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
+loadRanking();
+loadChallenges();
+</script>
+</body>
+</html>

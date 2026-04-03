@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Totem Self-Service — Gelateria Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root { font-size: 18px; }
+    body { padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    #kiosk { max-width: 600px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; display: flex; flex-direction: column; }
+
+    /* Header */
+    .k-header { text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+    .k-header h1 { font-size: 1.5em; margin-bottom: 4px; }
+    .k-header p { color: var(--text-muted); font-size: 0.85em; }
+
+    /* Steps */
+    .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .step-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-header); border: 2px solid var(--border-color); transition: background 0.3s; }
+    .step-dot.active { background: var(--border-color); }
+
+    /* Screens */
+    .screen { display: none; flex: 1; flex-direction: column; }
+    .screen.visible { display: flex; }
+
+    /* Start screen */
+    #screen-start { align-items: center; justify-content: center; text-align: center; gap: 20px; }
+    .big-icon { font-size: 5em; }
+    .btn-huge { background: var(--btn-hover-bg); color: var(--btn-hover-text); border: none; padding: 20px 48px; border-radius: 12px; font-family: inherit; font-size: 1.2em; cursor: pointer; transition: transform 0.1s; }
+    .btn-huge:active { transform: scale(0.97); }
+    .btn-big { background: var(--btn-hover-bg); color: var(--btn-hover-text); border: none; padding: 14px 32px; border-radius: 10px; font-family: inherit; font-size: 1em; cursor: pointer; margin-top: 10px; transition: transform 0.1s; width: 100%; }
+    .btn-big:active { transform: scale(0.97); }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px 28px; border-radius: 10px; font-family: inherit; font-size: 0.9em; cursor: pointer; width: 100%; margin-top: 8px; }
+
+    /* Flavor grid */
+    .flavor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .flavor-btn { background: var(--bg-header); border: 2px solid var(--border-color); color: var(--text-primary); padding: 18px 12px; border-radius: 10px; font-family: inherit; font-size: 0.95em; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .flavor-btn.selected { background: var(--btn-hover-bg); color: var(--btn-hover-text); border-color: var(--btn-hover-bg); }
+    .flavor-btn:hover { transform: scale(1.02); }
+
+    /* Cart */
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
+    .qty-ctrl { display: flex; align-items: center; gap: 10px; }
+    .qty-btn { background: var(--bg-header); border: 1px solid var(--border-color); color: var(--text-primary); width: 34px; height: 34px; border-radius: 6px; font-size: 1.1em; cursor: pointer; }
+
+    /* Payment */
+    .pay-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 16px 0; }
+    .pay-btn { background: var(--bg-header); border: 2px solid var(--border-color); color: var(--text-primary); padding: 16px 8px; border-radius: 10px; font-family: inherit; cursor: pointer; text-align: center; font-size: 0.88em; transition: all 0.15s; }
+    .pay-btn.selected { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Confirmation */
+    #screen-confirm { align-items: center; justify-content: center; text-align: center; gap: 16px; }
+    .confirm-icon { font-size: 4em; }
+    .order-num { font-size: 2em; font-weight: bold; border: 2px solid var(--border-color); padding: 8px 24px; border-radius: 8px; display: inline-block; }
+
+    /* Inactivity timer */
+    #inactivity-bar { height: 4px; background: var(--border-color); width: 100%; transition: width linear; margin-bottom: 12px; }
+
+    /* Fullscreen btn */
+    #fs-btn { position: fixed; top: 10px; right: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; cursor: pointer; border-radius: 4px; font-size: 0.75em; font-family: inherit; }
+  </style>
+</head>
+<body>
+<button id="fs-btn" onclick="toggleFullscreen()">⛶ Tela Cheia</button>
+<div id="kiosk">
+  <div class="k-header">
+    <h1>🍦 Gelateria Pro</h1>
+    <p>Totem de Auto-Atendimento</p>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="sd-1"></div>
+    <div class="step-dot" id="sd-2"></div>
+    <div class="step-dot" id="sd-3"></div>
+    <div class="step-dot" id="sd-4"></div>
+  </div>
+
+  <div id="inactivity-bar"></div>
+
+  <!-- Step 1: Start -->
+  <div class="screen visible" id="screen-start">
+    <div class="big-icon">🍦</div>
+    <h2>Bem-vindo!</h2>
+    <p style="color:var(--text-muted);">Toque para começar seu pedido</p>
+    <button class="btn-huge" onclick="startSession()">Tocar para Começar</button>
+  </div>
+
+  <!-- Step 2: Choose flavors -->
+  <div class="screen" id="screen-flavors">
+    <h2 style="margin-bottom:14px;">Escolha os Sabores</h2>
+    <div class="flavor-grid" id="flavor-grid">Carregando...</div>
+    <button class="btn-big" onclick="goToCart()" id="btn-next-cart" disabled>Ver Carrinho →</button>
+    <button class="btn-outline" onclick="goToStart()">← Voltar</button>
+  </div>
+
+  <!-- Step 3: Cart & quantities -->
+  <div class="screen" id="screen-cart">
+    <h2 style="margin-bottom:14px;">Seu Pedido</h2>
+    <div id="cart-items"></div>
+    <div style="border-top:1px solid var(--border-color);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;font-size:1.05em;">
+      <strong>Total:</strong>
+      <strong id="cart-total">R$ 0,00</strong>
+    </div>
+    <button class="btn-big" style="margin-top:16px;" onclick="goToPayment()">Pagar →</button>
+    <button class="btn-outline" onclick="showScreen('screen-flavors', 2)">← Voltar</button>
+  </div>
+
+  <!-- Step 4: Payment -->
+  <div class="screen" id="screen-payment">
+    <h2 style="margin-bottom:8px;">Forma de Pagamento</h2>
+    <div class="pay-options">
+      <button class="pay-btn" onclick="selectPay('pix', this)">📱<br>PIX</button>
+      <button class="pay-btn" onclick="selectPay('cartao', this)">💳<br>Cartão</button>
+      <button class="pay-btn" onclick="selectPay('dinheiro', this)">💵<br>Dinheiro</button>
+    </div>
+    <div id="pix-qr" style="display:none;background:var(--bg-header);padding:12px;border-radius:8px;text-align:center;font-family:monospace;font-size:0.75em;white-space:pre;margin-bottom:12px;"></div>
+    <button class="btn-big" onclick="confirmPayment()" id="btn-pay" disabled>Confirmar Pagamento</button>
+    <button class="btn-outline" onclick="showScreen('screen-cart', 3)">← Voltar</button>
+  </div>
+
+  <!-- Step 5: Confirmation -->
+  <div class="screen" id="screen-confirm">
+    <div class="confirm-icon">✅</div>
+    <h2>Pedido Confirmado!</h2>
+    <p style="color:var(--text-muted);">Número do pedido:</p>
+    <div class="order-num" id="order-num">–</div>
+    <p id="confirm-msg" style="color:var(--text-muted);font-size:0.9em;"></p>
+    <button class="btn-huge" style="margin-top:20px;" onclick="goToStart()">🍦 Novo Pedido</button>
+  </div>
+</div>
+
+<script>
+const API = window.API_URL || "http://localhost:5000";
+let sessionToken = null;
+let flavors = [];
+let cart = {}; // {sabor_id: {nome, preco, qty}}
+let selectedPayMethod = null;
+let inactivityTimer = null;
+let inactivityProgress = 100;
+const INACTIVITY_SEC = 60;
+
+applyTheme(localStorage.getItem("theme") || "dark");
+function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); }
+
+function resetInactivity() {
+  clearTimeout(inactivityTimer);
+  inactivityProgress = 100;
+  document.getElementById("inactivity-bar").style.width = "100%";
+  document.getElementById("inactivity-bar").style.transition = "none";
+  inactivityTimer = setTimeout(() => goToStart(), INACTIVITY_SEC * 1000);
+  setTimeout(() => {
+    document.getElementById("inactivity-bar").style.transition = `width ${INACTIVITY_SEC}s linear`;
+    document.getElementById("inactivity-bar").style.width = "0%";
+  }, 100);
+}
+
+document.addEventListener("click", resetInactivity);
+document.addEventListener("touchstart", resetInactivity);
+
+function showScreen(id, step) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("visible"));
+  document.getElementById(id).classList.add("visible");
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById(`sd-${i}`).classList.toggle("active", i <= step);
+  }
+  resetInactivity();
+}
+
+async function startSession() {
+  try {
+    const r = await fetch(`${API}/api/kiosk/sessao/iniciar`, { method: "POST" });
+    const d = await r.json();
+    sessionToken = d.token;
+  } catch {
+    sessionToken = "offline-" + Date.now();
+  }
+  await loadFlavors();
+  showScreen("screen-flavors", 2);
+}
+
+async function loadFlavors() {
+  try {
+    const r = await fetch(`${API}/api/kiosk/cardapio-simplificado`);
+    flavors = await r.json();
+  } catch {
+    flavors = [{id:1,nome:"Chocolate",preco:10},{id:2,nome:"Morango",preco:9.5},{id:3,nome:"Baunilha",preco:8},{id:4,nome:"Pistache",preco:12},{id:5,nome:"Limão",preco:9}];
+  }
+  const grid = document.getElementById("flavor-grid");
+  grid.innerHTML = flavors.map(f => `
+    <button class="flavor-btn" onclick="toggleFlavor(${f.id},'${f.nome}',${f.preco},this)" id="fb-${f.id}">
+      🍨<br><strong>${f.nome}</strong><br><small>R$${parseFloat(f.preco).toFixed(2)}</small>
+    </button>`).join("");
+}
+
+function toggleFlavor(id, nome, preco, btn) {
+  if (cart[id]) {
+    delete cart[id];
+    btn.classList.remove("selected");
+  } else {
+    cart[id] = { nome, preco: parseFloat(preco), qty: 1 };
+    btn.classList.add("selected");
+  }
+  document.getElementById("btn-next-cart").disabled = Object.keys(cart).length === 0;
+}
+
+function goToCart() {
+  renderCart();
+  showScreen("screen-cart", 3);
+}
+
+function renderCart() {
+  const el = document.getElementById("cart-items");
+  el.innerHTML = "";
+  let total = 0;
+  Object.entries(cart).forEach(([id, item]) => {
+    total += item.preco * item.qty;
+    const row = document.createElement("div");
+    row.className = "cart-item";
+    row.innerHTML = `
+      <span>${item.nome}</span>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${id},-1)">−</button>
+        <span>${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${id},1)">+</button>
+        <span style="color:var(--text-muted);min-width:60px;text-align:right">R$${(item.preco*item.qty).toFixed(2)}</span>
+      </div>`;
+    el.appendChild(row);
+  });
+  document.getElementById("cart-total").textContent = `R$ ${total.toFixed(2).replace(".", ",")}`;
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty = Math.max(1, cart[id].qty + delta);
+  renderCart();
+}
+
+function goToPayment() {
+  selectedPayMethod = null;
+  document.querySelectorAll(".pay-btn").forEach(b => b.classList.remove("selected"));
+  document.getElementById("btn-pay").disabled = true;
+  document.getElementById("pix-qr").style.display = "none";
+  showScreen("screen-payment", 4);
+}
+
+function selectPay(method, btn) {
+  selectedPayMethod = method;
+  document.querySelectorAll(".pay-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  document.getElementById("btn-pay").disabled = false;
+  const qr = document.getElementById("pix-qr");
+  if (method === "pix") {
+    qr.style.display = "block";
+    qr.textContent = generateQrAscii("gelateria@pix.key");
+  } else {
+    qr.style.display = "none";
+  }
+}
+
+function generateQrAscii(key) {
+  // Simple deterministic ASCII QR art
+  const lines = [
+    "  ██████  ░░░░  ██████  ",
+    "  █    █  ░░░░  █    █  ",
+    "  █ ██ █  ░░░░  █ ██ █  ",
+    "  █    █  ░░░░  █    █  ",
+    "  ██████  ░░░░  ██████  ",
+    "  ░░░░░░░░░░░░░░░░░░░░  ",
+    "  ██░░██░░██░░██░░██░░  ",
+    "  ░░██░░██░░██░░██░░██  ",
+    "  ██████  ░░░░░░░░░░░░  ",
+    "  █    █  ░░░░░░░░░░░░  ",
+    "  █ ██ █  ░░░░░░░░░░░░  ",
+    "  █    █  ░░░░░░░░░░░░  ",
+    "  ██████  ░░░░░░░░░░░░  ",
+  ];
+  return lines.join("\n") + "\n\n📱 Escaneie para pagar via PIX";
+}
+
+async function confirmPayment() {
+  const itens = Object.entries(cart).map(([id, item]) => ({ sabor_id: parseInt(id), quantidade: item.qty }));
+  try {
+    // Register order in kiosk
+    const or = await fetch(`${API}/api/kiosk/pedido`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ token: sessionToken, itens })
+    });
+    // Process payment
+    const pr = await fetch(`${API}/api/kiosk/pagamento`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ token: sessionToken, metodo: selectedPayMethod })
+    });
+    const pd = await pr.json();
+    document.getElementById("order-num").textContent = pd.numero_pedido || "OK";
+    document.getElementById("confirm-msg").textContent = pd.mensagem || "Pagamento aprovado!";
+  } catch {
+    document.getElementById("order-num").textContent = Math.random().toString(36).slice(2,8).toUpperCase();
+    document.getElementById("confirm-msg").textContent = "Pagamento registrado! Retire seu sorvete no balcão. 🍦";
+  }
+  showScreen("screen-confirm", 4);
+  cart = {};
+  sessionToken = null;
+}
+
+function goToStart() {
+  cart = {};
+  sessionToken = null;
+  document.querySelectorAll(".flavor-btn").forEach(b => b.classList.remove("selected"));
+  showScreen("screen-start", 1);
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+// Reset inactivity on load
+resetInactivity();
+</script>
+</body>
+</html>
