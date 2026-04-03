@@ -75,6 +75,14 @@ def listar_pedidos():
     return jsonify([dict(p) for p in pedidos])
 
 
+@api_bp.get("/pedidos/<int:pedido_id>")
+def obter_pedido(pedido_id):
+    pedido = pedido_model.obter_pedido(pedido_id)
+    if not pedido:
+        return jsonify({"error": "Pedido não encontrado"}), 404
+    return jsonify(dict(pedido))
+
+
 @api_bp.post("/pedidos")
 def criar_pedido():
     data = request.get_json(silent=True) or {}
@@ -90,10 +98,61 @@ def criar_pedido():
     except (TypeError, ValueError):
         return jsonify({"error": "sabor_id e quantidade devem ser inteiros positivos"}), 400
 
-    pedido = pedido_model.criar_pedido(sabor_id, quantidade)
+    metodo = (data.get("metodo_pagamento") or "dinheiro").strip().lower()
+    if metodo not in pedido_model.METODOS_PAGAMENTO:
+        return jsonify({"error": f"metodo_pagamento deve ser um de: {', '.join(pedido_model.METODOS_PAGAMENTO)}"}), 400
+
+    observacao = (data.get("observacao") or "").strip() or None
+
+    pedido = pedido_model.criar_pedido(sabor_id, quantidade, metodo, observacao)
     if not pedido:
         return jsonify({"error": "Sabor não encontrado"}), 404
     return jsonify(dict(pedido)), 201
+
+
+@api_bp.put("/pedidos/<int:pedido_id>")
+def atualizar_pedido(pedido_id):
+    """Edit an order — change quantity, payment method, status, or add notes."""
+    data = request.get_json(silent=True) or {}
+    quantidade = data.get("quantidade")
+    metodo = data.get("metodo_pagamento")
+    status = data.get("status")
+    observacao = data.get("observacao")
+
+    if quantidade is not None:
+        try:
+            quantidade = int(quantidade)
+            if quantidade <= 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({"error": "quantidade deve ser um inteiro positivo"}), 400
+
+    if metodo is not None:
+        metodo = metodo.strip().lower()
+        if metodo not in pedido_model.METODOS_PAGAMENTO:
+            return jsonify({"error": f"metodo_pagamento deve ser um de: {', '.join(pedido_model.METODOS_PAGAMENTO)}"}), 400
+
+    if status is not None:
+        status = status.strip().lower()
+        if status not in pedido_model.STATUS_PEDIDO:
+            return jsonify({"error": f"status deve ser um de: {', '.join(pedido_model.STATUS_PEDIDO)}"}), 400
+
+    pedido = pedido_model.atualizar_pedido(
+        pedido_id, quantidade=quantidade, metodo_pagamento=metodo,
+        status=status, observacao=observacao
+    )
+    if not pedido:
+        return jsonify({"error": "Pedido não encontrado"}), 404
+    return jsonify(dict(pedido))
+
+
+@api_bp.delete("/pedidos/<int:pedido_id>")
+def cancelar_pedido(pedido_id):
+    """Cancel an order (marks as 'cancelado')."""
+    pedido = pedido_model.cancelar_pedido(pedido_id)
+    if not pedido:
+        return jsonify({"error": "Pedido não encontrado"}), 404
+    return jsonify({"message": "Pedido cancelado com sucesso", "pedido": dict(pedido)})
 
 
 # ── Estoque ──────────────────────────────────────────────────────────────────
@@ -123,6 +182,33 @@ def set_estoque(sabor_id):
 
 
 # ── Estoque Self-Service (estoque_sabores) ────────────────────────────────────
+
+@api_bp.get("/estoque/sabores")
+def listar_estoque_sabores():
+    """List all self-service flavors with stock levels, categories, and alerts."""
+    rows = estoque_sabores_model.listar_estoque_sabores()
+    return jsonify([dict(r) for r in rows])
+
+
+@api_bp.get("/estoque/sabores/resumo")
+def resumo_estoque_sabores():
+    """Summary of self-service inventory — totals, alerts, category breakdown."""
+    rows = estoque_sabores_model.listar_estoque_sabores()
+    flavors = [dict(r) for r in rows]
+    acai = [f for f in flavors if f["categoria"] == "açaí"]
+    sorvete = [f for f in flavors if f["categoria"] == "sorvete"]
+    faltando = [f for f in flavors if f["estoque_minimo_sugestao"] > 0 and f["quantidade_atual"] < f["estoque_minimo_sugestao"]]
+    rapida = [f for f in flavors if f["resposicao_rapida"]]
+    return jsonify({
+        "total": len(flavors),
+        "acai": len(acai),
+        "sorvete": len(sorvete),
+        "faltando": len(faltando),
+        "reposicao_rapida": len(rapida),
+        "itens_faltando": faltando,
+        "itens_reposicao_rapida": rapida,
+    })
+
 
 @api_bp.get("/estoque/faltando")
 def estoque_faltando():
@@ -183,6 +269,7 @@ def status():
     receita = sum(
         float(p.get("quantidade", 0)) * preco_por_nome.get(p.get("sabor", ""), 0.0)
         for p in pedidos
+        if p.get("status", "confirmado") != "cancelado"
     )
     estoque_baixo = [e for e in estoque if int(e.get("quantidade", 0)) < 5]
     return jsonify({

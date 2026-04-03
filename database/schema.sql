@@ -142,6 +142,29 @@ INSERT INTO estoque_sabores (nome, volume_litros, categoria, em_exposicao, estoq
     ('Milho verde',          5.0, 'sorvete', TRUE,  0, FALSE)
 ON CONFLICT (nome, volume_litros) DO NOTHING;
 
+-- ── Pedidos: add payment & status columns ────────────────────────────────────
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'pedidos' AND column_name = 'metodo_pagamento'
+  ) THEN
+    ALTER TABLE pedidos ADD COLUMN metodo_pagamento VARCHAR(30) DEFAULT 'dinheiro';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'pedidos' AND column_name = 'status'
+  ) THEN
+    ALTER TABLE pedidos ADD COLUMN status VARCHAR(20) DEFAULT 'confirmado';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'pedidos' AND column_name = 'observacao'
+  ) THEN
+    ALTER TABLE pedidos ADD COLUMN observacao TEXT;
+  END IF;
+END$$;
+
 -- Seed data
 INSERT INTO sabores (nome, preco) VALUES
     ('Chocolate', 10.00),

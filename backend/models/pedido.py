@@ -1,12 +1,16 @@
 from backend.database import get_db
 
+METODOS_PAGAMENTO = ("dinheiro", "pix", "cartao_credito", "cartao_debito")
+STATUS_PEDIDO = ("confirmado", "cancelado", "pendente")
+
 
 def listar_pedidos():
     with get_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT p.id, s.nome AS sabor, p.quantidade, p.data
+                SELECT p.id, s.nome AS sabor, p.sabor_id, p.quantidade, p.data,
+                       p.metodo_pagamento, p.status, p.observacao
                 FROM pedidos p
                 JOIN sabores s ON p.sabor_id = s.id
                 ORDER BY p.data DESC
@@ -15,14 +19,67 @@ def listar_pedidos():
             return cursor.fetchall()
 
 
-def criar_pedido(sabor_id, quantidade):
+def obter_pedido(pedido_id):
+    """Return a single order by id, or None."""
     with get_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO pedidos (sabor_id, quantidade) VALUES (%s, %s) RETURNING *",
-                (sabor_id, quantidade),
+                """
+                SELECT p.id, s.nome AS sabor, p.sabor_id, p.quantidade, p.data,
+                       p.metodo_pagamento, p.status, p.observacao
+                FROM pedidos p
+                JOIN sabores s ON p.sabor_id = s.id
+                WHERE p.id = %s
+                """,
+                (pedido_id,),
             )
             return cursor.fetchone()
+
+
+def criar_pedido(sabor_id, quantidade, metodo_pagamento="dinheiro", observacao=None):
+    with get_db() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO pedidos (sabor_id, quantidade, metodo_pagamento, observacao)
+                   VALUES (%s, %s, %s, %s) RETURNING *""",
+                (sabor_id, quantidade, metodo_pagamento, observacao),
+            )
+            return cursor.fetchone()
+
+
+def atualizar_pedido(pedido_id, quantidade=None, metodo_pagamento=None,
+                     status=None, observacao=None):
+    """Update editable fields of an existing order. Returns updated row or None."""
+    with get_db() as conn:
+        with conn.cursor() as cursor:
+            # Build SET clause dynamically
+            sets = []
+            params = []
+            if quantidade is not None:
+                sets.append("quantidade = %s")
+                params.append(quantidade)
+            if metodo_pagamento is not None:
+                sets.append("metodo_pagamento = %s")
+                params.append(metodo_pagamento)
+            if status is not None:
+                sets.append("status = %s")
+                params.append(status)
+            if observacao is not None:
+                sets.append("observacao = %s")
+                params.append(observacao)
+            if not sets:
+                return obter_pedido(pedido_id)
+            params.append(pedido_id)
+            cursor.execute(
+                f"UPDATE pedidos SET {', '.join(sets)} WHERE id = %s RETURNING *",
+                params,
+            )
+            return cursor.fetchone()
+
+
+def cancelar_pedido(pedido_id):
+    """Mark an order as cancelled. Returns updated row or None."""
+    return atualizar_pedido(pedido_id, status="cancelado")
 
 
 def relatorio_vendas(periodo: str = "diario") -> list:
