@@ -118,7 +118,7 @@ Branch: `copilot/add-openai-chatbot-integration` | Estado: ✅ **Não-draft** | 
 **Nota Jobs:** D:4 I:5 N:5 X:4
 
 **O que falta para o OK de Steve Jobs:**
-- ❌ Chat widget sem **modo offline/fallback** gracioso — se OpenAI estiver fora, experência quebra
+- ❌ Chat widget sem **modo offline/fallback** gracioso — se OpenAI estiver fora, experiência quebra
 - ❌ Recomendações não são **personalizadas por usuário logado** (sem session context)
 - ❌ Sem **streaming** da resposta do chatbot — resposta aparece de uma vez, sem efeito "digitando"
 - ❌ Testes de integração mock não cobrem falha da API OpenAI
