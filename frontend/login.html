@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔐 Login — Gelateria Sistema</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #111; --surface2: #1a1a1a;
+      --accent: #00ff41; --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0; --text-muted: #888; --border: #2a2a2a;
+      --danger: #ff4444; --success: #00cc44;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+      --accent: #1a7a1a; --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a; --text-muted: #666; --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    .auth-container {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px; width: 100%; max-width: 400px;
+      box-shadow: var(--card-shadow);
+    }
+    .auth-header {
+      text-align: center; margin-bottom: 24px;
+    }
+    .auth-header h1 {
+      font-size: 1.5em; color: var(--accent); margin-bottom: 4px;
+    }
+    .auth-header p {
+      font-size: 0.9em; color: var(--text-muted);
+    }
+
+    .tab-bar {
+      display: flex; margin-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    .tab-bar button {
+      flex: 1; background: none; border: none; color: var(--text-muted);
+      padding: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .tab-bar button.active {
+      color: var(--accent); border-bottom-color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block; font-size: 0.85em; color: var(--text-muted);
+      margin-bottom: 6px; font-weight: 500;
+    }
+    .form-group input {
+      width: 100%; padding: 10px 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: var(--accent); color: #000; font-weight: 700;
+      font-size: 15px; cursor: pointer; transition: opacity 0.2s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { opacity: 0.9; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .message {
+      text-align: center; margin-top: 12px; font-size: 0.88em;
+      padding: 8px; border-radius: 6px; display: none;
+    }
+    .message.error {
+      display: block; background: rgba(255,68,68,0.1); color: var(--danger);
+      border: 1px solid rgba(255,68,68,0.3);
+    }
+    .message.success {
+      display: block; background: rgba(0,204,68,0.1); color: var(--success);
+      border: 1px solid rgba(0,204,68,0.3);
+    }
+
+    .user-info {
+      text-align: center; display: none;
+    }
+    .user-info.visible { display: block; }
+    .user-info .avatar {
+      width: 64px; height: 64px; border-radius: 50%; background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2em; margin: 0 auto 12px;
+    }
+    .user-info h2 { color: var(--accent); margin-bottom: 4px; }
+    .user-info p { color: var(--text-muted); font-size: 0.9em; margin-bottom: 16px; }
+    .user-info .stats {
+      display: flex; gap: 16px; justify-content: center; margin-bottom: 20px;
+    }
+    .user-info .stat {
+      text-align: center;
+    }
+    .user-info .stat-val {
+      font-size: 1.5em; font-weight: 700; color: var(--accent);
+    }
+    .user-info .stat-label {
+      font-size: 0.75em; color: var(--text-muted); text-transform: uppercase;
+    }
+    .btn-logout {
+      padding: 10px 24px; border: 1px solid var(--border); border-radius: 8px;
+      background: none; color: var(--text-muted); cursor: pointer;
+      font-size: 14px; transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    .nav-back {
+      margin-top: 16px; text-align: center;
+    }
+    .nav-back a {
+      color: var(--text-muted); text-decoration: none; font-size: 0.9em;
+    }
+    .nav-back a:hover { color: var(--accent); }
+
+    .theme-toggle {
+      position: fixed; top: 16px; right: 16px;
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); padding: 5px 10px; border-radius: 6px;
+      cursor: pointer; font-size: 1em;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 480px) {
+      .auth-container { margin: 16px; padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+
+  <!-- Auth forms -->
+  <div class="auth-container" id="auth-forms">
+    <div class="auth-header">
+      <h1>🍦 Gelateria</h1>
+      <p>Faça login ou crie sua conta</p>
+    </div>
+
+    <div class="tab-bar">
+      <button class="active" onclick="showTab('login')">Entrar</button>
+      <button onclick="showTab('register')">Criar Conta</button>
+    </div>
+
+    <!-- Login form -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" required placeholder="seu@email.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Senha</label>
+        <input type="password" id="login-password" required placeholder="Sua senha" minlength="8" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-submit" id="login-btn">Entrar</button>
+      <div class="message" id="login-msg"></div>
+    </form>
+
+    <!-- Register form -->
+    <form id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label for="reg-name">Nome</label>
+        <input type="text" id="reg-name" required placeholder="Seu nome" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">E-mail</label>
+        <input type="email" id="reg-email" required placeholder="seu@email.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Senha</label>
+        <input type="password" id="reg-password" required placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn-submit" id="reg-btn">Criar Conta</button>
+      <div class="message" id="reg-msg"></div>
+    </form>
+  </div>
+
+  <!-- User profile (shown after login) -->
+  <div class="auth-container user-info" id="user-profile">
+    <div class="avatar" id="user-avatar">🍦</div>
+    <h2 id="user-name"></h2>
+    <p id="user-email"></p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val" id="user-level">1</div>
+        <div class="stat-label">Nível</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="user-points">0</div>
+        <div class="stat-label">Pontos</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="handleLogout()">Sair</button>
+  </div>
+
+  <div class="nav-back">
+    <a href="index.html">← Voltar ao Terminal</a> ·
+    <a href="dashboard.html">📊 Dashboard</a> ·
+    <a href="admin.html">🛠️ Admin</a>
+  </div>
+
+  <script>
+    var API_URL = window.API_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000' : ''
+    );
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️'; localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('theme-btn').textContent = '☀️';
+    }
+
+    function esc(str) {
+      var d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function showTab(tab) {
+      var loginForm = document.getElementById('login-form');
+      var regForm = document.getElementById('register-form');
+      var tabs = document.querySelectorAll('.tab-bar button');
+
+      if (tab === 'login') {
+        loginForm.style.display = '';
+        regForm.style.display = 'none';
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+      } else {
+        loginForm.style.display = 'none';
+        regForm.style.display = '';
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
+      }
+      // Clear messages
+      document.getElementById('login-msg').className = 'message';
+      document.getElementById('reg-msg').className = 'message';
+    }
+
+    function showMessage(elId, msg, type) {
+      var el = document.getElementById(elId);
+      el.textContent = msg;
+      el.className = 'message ' + type;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      var btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.textContent = 'Entrando…';
+
+      fetch(API_URL + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          if (!res.ok) {
+            showMessage('login-msg', res.data.error || 'Erro ao fazer login', 'error');
+            return;
+          }
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          showMessage('login-msg', 'Login realizado com sucesso!', 'success');
+          setTimeout(showUserProfile, 500);
+        })
+        .catch(function(err) {
+          showMessage('login-msg', 'Erro de conexão: ' + err.message, 'error');
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Entrar';
+        });
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      var name = document.getElementById('reg-name').value.trim();
+      var email = document.getElementById('reg-email').value.trim();
+      var password = document.getElementById('reg-password').value;
+      var btn = document.getElementById('reg-btn');
+      btn.disabled = true;
+      btn.textContent = 'Criando…';
+
+      fetch(API_URL + '/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, email: email, password: password })
+      })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          if (!res.ok) {
+            showMessage('reg-msg', res.data.error || 'Erro ao criar conta', 'error');
+            return;
+          }
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          showMessage('reg-msg', 'Conta criada com sucesso!', 'success');
+          setTimeout(showUserProfile, 500);
+        })
+        .catch(function(err) {
+          showMessage('reg-msg', 'Erro de conexão: ' + err.message, 'error');
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Criar Conta';
+        });
+    }
+
+    function showUserProfile() {
+      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      if (!user) return;
+
+      document.getElementById('auth-forms').style.display = 'none';
+      var profile = document.getElementById('user-profile');
+      profile.classList.add('visible');
+      document.getElementById('user-name').textContent = user.name || 'Usuário';
+      document.getElementById('user-email').textContent = user.email || '';
+      document.getElementById('user-level').textContent = user.level || 1;
+      document.getElementById('user-points').textContent = user.total_points || 0;
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      document.getElementById('user-profile').classList.remove('visible');
+      document.getElementById('auth-forms').style.display = '';
+      document.getElementById('login-form').reset();
+      document.getElementById('register-form').reset();
+      document.getElementById('login-msg').className = 'message';
+      document.getElementById('reg-msg').className = 'message';
+      showTab('login');
+    }
+
+    // On page load, check if already logged in
+    if (localStorage.getItem('token')) {
+      showUserProfile();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>
