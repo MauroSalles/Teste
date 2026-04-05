@@ -247,7 +247,7 @@
         var form = document.createElement('div');
         form.className = 'order-form';
         form.id = 'order-form-' + f.id;
-        form.innerHTML = buildOrderFormHTML(f.id);
+        buildOrderForm(f.id, form);
         card.appendChild(form);
 
         grid.appendChild(card);
@@ -255,21 +255,47 @@
       container.appendChild(grid);
     }
 
-    function buildOrderFormHTML(saborId) {
-      return '<div class="form-row">' +
-        '<label for="qty-' + saborId + '">Quantidade</label>' +
-        '<input type="number" id="qty-' + saborId + '" min="1" max="99" value="1" />' +
-        '</div>' +
-        '<div class="form-row">' +
-        '<label for="pag-' + saborId + '">Pagamento</label>' +
-        '<select id="pag-' + saborId + '">' +
-        '<option value="dinheiro">💵 Dinheiro</option>' +
-        '<option value="cartão">💳 Cartão</option>' +
-        '<option value="pix">📲 Pix</option>' +
-        '</select>' +
-        '</div>' +
-        '<button class="btn-confirmar" onclick="submitOrder(' + saborId + ', this)">Confirmar Pedido</button>' +
-        '<div class="order-msg" id="order-msg-' + saborId + '"></div>';
+    function buildOrderForm(saborId, formEl) {
+      var rowQty = document.createElement('div');
+      rowQty.className = 'form-row';
+      var lblQty = document.createElement('label');
+      lblQty.textContent = 'Quantidade';
+      var inputQty = document.createElement('input');
+      inputQty.type = 'number';
+      inputQty.id = 'qty-' + saborId;
+      inputQty.min = '1';
+      inputQty.max = '99';
+      inputQty.value = '1';
+      rowQty.appendChild(lblQty);
+      rowQty.appendChild(inputQty);
+      formEl.appendChild(rowQty);
+
+      var rowPag = document.createElement('div');
+      rowPag.className = 'form-row';
+      var lblPag = document.createElement('label');
+      lblPag.textContent = 'Pagamento';
+      var select = document.createElement('select');
+      select.id = 'pag-' + saborId;
+      [['dinheiro', '💵 Dinheiro'], ['cartão', '💳 Cartão'], ['pix', '📲 Pix']].forEach(function(opt) {
+        var o = document.createElement('option');
+        o.value = opt[0];
+        o.textContent = opt[1];
+        select.appendChild(o);
+      });
+      rowPag.appendChild(lblPag);
+      rowPag.appendChild(select);
+      formEl.appendChild(rowPag);
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-confirmar';
+      btn.textContent = 'Confirmar Pedido';
+      btn.addEventListener('click', function() { submitOrder(saborId, btn); });
+      formEl.appendChild(btn);
+
+      var msg = document.createElement('div');
+      msg.className = 'order-msg';
+      msg.id = 'order-msg-' + saborId;
+      formEl.appendChild(msg);
     }
 
     function toggleOrderForm(card, saborId) {

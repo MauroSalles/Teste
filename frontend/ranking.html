@@ -256,7 +256,13 @@
       var table = document.createElement('table');
       table.className = 'lb-table';
       var thead = document.createElement('thead');
-      thead.innerHTML = '<tr><th>#</th><th>Nome</th><th>Nível</th><th>Pontos</th></tr>';
+      var headRow = document.createElement('tr');
+      ['#', 'Nome', 'Nível', 'Pontos'].forEach(function(col) {
+        var th = document.createElement('th');
+        th.textContent = col;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
       table.appendChild(thead);
 
       var tbody = document.createElement('tbody');
@@ -339,7 +345,11 @@
 
     function loadGlobal() {
       var container = document.getElementById('lb-container');
-      container.innerHTML = '<div class="state-msg">Carregando ranking global…</div>';
+      container.innerHTML = '';
+      var loadMsg = document.createElement('div');
+      loadMsg.className = 'state-msg';
+      loadMsg.textContent = 'Carregando ranking global…';
+      container.appendChild(loadMsg);
       fetch(API + '/api/gamification/leaderboard/global?limit=20')
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -353,7 +363,11 @@
 
     function loadWeekly() {
       var container = document.getElementById('lb-container');
-      container.innerHTML = '<div class="state-msg">Carregando ranking semanal…</div>';
+      container.innerHTML = '';
+      var loadMsg = document.createElement('div');
+      loadMsg.className = 'state-msg';
+      loadMsg.textContent = 'Carregando ranking semanal…';
+      container.appendChild(loadMsg);
       fetch(API + '/api/gamification/leaderboard/weekly')
         .then(function(r) { return r.json(); })
         .then(function(data) {
