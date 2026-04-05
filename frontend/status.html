@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📡 Status da API — Gelateria Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #111; --surface2: #1a1a1a;
+      --accent: #00ff41; --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0; --text-muted: #888; --border: #2a2a2a;
+      --danger: #ff4444; --success: #00cc44;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+      --accent: #1a7a1a; --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a; --text-muted: #666; --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }
+
+    nav { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { font-weight: 700; font-size: 1.2em; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88em; padding: 5px 10px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-dim); color: var(--accent); }
+    #theme-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 1em; }
+
+    main { max-width: 700px; margin: 0 auto; padding: 24px 20px; }
+    h1 { font-size: 1.5em; margin-bottom: 8px; color: var(--accent); }
+    .subtitle { color: var(--text-muted); font-size: 0.9em; margin-bottom: 24px; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--card-shadow); text-align: center; }
+    .card-icon { font-size: 2em; margin-bottom: 8px; }
+    .card-label { font-size: 0.8em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .card-value { font-size: 1.3em; font-weight: 700; color: var(--accent); }
+    .card-value.ok { color: var(--success); }
+    .card-value.fail { color: var(--danger); }
+
+    .semaforo { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .semaforo.verde { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .semaforo.vermelho { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+    .semaforo.cinza { background: var(--text-muted); }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: var(--card-shadow); }
+    .section h2 { font-size: 1em; margin-bottom: 14px; color: var(--text-muted); }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key { color: var(--text-muted); }
+    .detail-val { font-weight: 600; }
+
+    .refresh-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .refresh-bar button { padding: 8px 18px; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 600; }
+    .refresh-bar button:hover { background: var(--accent); color: #000; }
+    .refresh-info { font-size: 0.85em; color: var(--text-muted); }
+
+    .loading { animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="landing.html">🍦 Gelateria Pro</a>
+    <div class="nav-links">
+      <a href="landing.html">🏠 Início</a>
+      <a href="cardapio.html">🛒 Cardápio</a>
+      <a href="status.html" class="active">📡 Status</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+      <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    </div>
+  </nav>
+
+  <main>
+    <h1>📡 Status da API</h1>
+    <p class="subtitle">Saúde do sistema em tempo real</p>
+
+    <div class="refresh-bar">
+      <button onclick="loadStatus()">🔄 Atualizar agora</button>
+      <span class="refresh-info" id="refresh-info">Auto-refresh a cada 30s</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🗄️</div>
+        <div class="card-label">Banco de Dados</div>
+        <div class="card-value loading" id="card-db">…</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-label">API Status</div>
+        <div class="card-value loading" id="card-api">…</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏱️</div>
+        <div class="card-label">Uptime</div>
+        <div class="card-value loading" id="card-uptime">…</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔍 Detalhes</h2>
+      <div id="details-list">
+        <div class="detail-row loading">
+          <span class="detail-key">Carregando…</span>
+          <span class="detail-val"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = window.API_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000' : ''
+    );
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️'; localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.addEventListener('DOMContentLoaded', function() {
+        var b = document.getElementById('theme-btn'); if (b) b.textContent = '☀️';
+      });
+    }
+
+    function fmtUptime(secs) {
+      if (secs === undefined || secs === null) return '—';
+      var s = Math.round(secs);
+      var h = Math.floor(s / 3600); s -= h * 3600;
+      var m = Math.floor(s / 60); s -= m * 60;
+      if (h > 0) return h + 'h ' + m + 'm ' + s + 's';
+      if (m > 0) return m + 'm ' + s + 's';
+      return s + 's';
+    }
+
+    function setCard(id, text, statusClass) {
+      var el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'card-value ' + (statusClass || '');
+    }
+
+    function semaforo(ok) {
+      var s = document.createElement('span');
+      s.className = 'semaforo ' + (ok ? 'verde' : 'vermelho');
+      return s;
+    }
+
+    function loadStatus() {
+      var info = document.getElementById('refresh-info');
+      info.textContent = 'Atualizando…';
+
+      fetch(API + '/health/detailed')
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          var data = res.data;
+          var dbOk = data.database === 'ok' || data.db === 'ok' || data.database_status === 'ok';
+          var jwtOk = data.jwt === 'ok' || data.jwt_configured === true;
+
+          setCard('card-db', dbOk ? '🟢 OK' : '🔴 Falha', dbOk ? 'ok' : 'fail');
+          setCard('card-api', res.ok ? '🟢 Online' : '🟡 Degradado', res.ok ? 'ok' : 'fail');
+          setCard('card-uptime', fmtUptime(data.uptime_seconds || data.uptime), '');
+
+          var list = document.getElementById('details-list');
+          list.innerHTML = '';
+
+          var rows = [
+            { key: 'Banco de Dados', val: dbOk ? '✅ Conectado' : '❌ Falha', ok: dbOk },
+            { key: 'JWT', val: jwtOk ? '✅ Configurado' : '⚠️ Padrão', ok: jwtOk },
+            { key: 'Uptime', val: fmtUptime(data.uptime_seconds || data.uptime), ok: true },
+            { key: 'Ambiente', val: data.environment || data.env || '—', ok: true }
+          ];
+
+          rows.forEach(function(r) {
+            var row = document.createElement('div');
+            row.className = 'detail-row';
+            var key = document.createElement('span');
+            key.className = 'detail-key';
+            key.textContent = r.key;
+            var val = document.createElement('span');
+            val.className = 'detail-val';
+            val.appendChild(semaforo(r.ok));
+            val.appendChild(document.createTextNode(r.val));
+            row.appendChild(key);
+            row.appendChild(val);
+            list.appendChild(row);
+          });
+
+          var now = new Date();
+          info.textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR') + ' · Auto-refresh a cada 30s';
+        })
+        .catch(function(err) {
+          setCard('card-db', '❓', 'fail');
+          setCard('card-api', '🔴 Offline', 'fail');
+          setCard('card-uptime', '—', '');
+          var list = document.getElementById('details-list');
+          list.innerHTML = '';
+          var row = document.createElement('div');
+          row.className = 'detail-row';
+          var key = document.createElement('span');
+          key.className = 'detail-key';
+          key.textContent = 'Erro';
+          var val = document.createElement('span');
+          val.className = 'detail-val';
+          val.textContent = err.message;
+          row.appendChild(key); row.appendChild(val);
+          list.appendChild(row);
+          info.textContent = 'Falha ao conectar · Auto-refresh a cada 30s';
+        });
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 30000);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>

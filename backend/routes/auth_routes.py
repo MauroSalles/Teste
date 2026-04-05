@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 
 from backend.models.user import autenticar_usuario, buscar_usuario_por_id, criar_usuario
 from backend.auth.jwt_handler import generate_token, token_required
+from backend.limiter import limiter
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -20,6 +21,7 @@ def _is_valid_email(email: str) -> bool:
 
 
 @auth_bp.post("/register")
+@limiter.limit("10/minute")
 def register():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
@@ -46,6 +48,7 @@ def register():
 
 
 @auth_bp.post("/login")
+@limiter.limit("10/minute")
 def login():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()

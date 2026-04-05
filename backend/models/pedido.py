@@ -13,7 +13,7 @@ def listar_pedidos(page=1, per_page=50):
             cursor.execute(
                 """
                 SELECT p.id, s.nome AS sabor, p.sabor_id, p.quantidade, p.data,
-                       p.metodo_pagamento, p.status, p.observacao
+                       p.metodo_pagamento, p.status, p.observacao, p.user_id
                 FROM pedidos p
                 JOIN sabores s ON p.sabor_id = s.id
                 ORDER BY p.data DESC
@@ -31,7 +31,7 @@ def obter_pedido(pedido_id):
             cursor.execute(
                 """
                 SELECT p.id, s.nome AS sabor, p.sabor_id, p.quantidade, p.data,
-                       p.metodo_pagamento, p.status, p.observacao
+                       p.metodo_pagamento, p.status, p.observacao, p.user_id
                 FROM pedidos p
                 JOIN sabores s ON p.sabor_id = s.id
                 WHERE p.id = %s
@@ -41,13 +41,13 @@ def obter_pedido(pedido_id):
             return cursor.fetchone()
 
 
-def criar_pedido(sabor_id, quantidade, metodo_pagamento="dinheiro", observacao=None):
+def criar_pedido(sabor_id, quantidade, metodo_pagamento="dinheiro", observacao=None, user_id=None):
     with get_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                """INSERT INTO pedidos (sabor_id, quantidade, metodo_pagamento, observacao)
-                   VALUES (%s, %s, %s, %s) RETURNING *""",
-                (sabor_id, quantidade, metodo_pagamento, observacao),
+                """INSERT INTO pedidos (sabor_id, quantidade, metodo_pagamento, observacao, user_id)
+                   VALUES (%s, %s, %s, %s, %s) RETURNING *""",
+                (sabor_id, quantidade, metodo_pagamento, observacao, user_id),
             )
             return cursor.fetchone()
 

@@ -14,11 +14,16 @@
       <div id="header-top">
         <span class="prompt">🍦 Gelateria Sistema v2.0</span>
         <div id="header-nav">
+          <a href="landing.html">🏠 Início</a>
+          <a href="cardapio.html">🛒 Cardápio</a>
+          <a href="ranking.html">🏆 Ranking</a>
           <a href="admin.html">🛠️ Admin</a>
           <a href="dashboard.html">📊 Dashboard</a>
           <a href="estoque.html">📦 Estoque</a>
           <a href="relatorios.html">📈 Relatórios</a>
-          <a href="login.html">🔐 Login</a>
+          <a href="login.html" id="nav-login">🔐 Login</a>
+          <span id="nav-user" style="display:none;font-size:0.85em;color:#00ff41"></span>
+          <button id="nav-logout" style="display:none;background:none;border:1px solid #2a2a2a;color:#888;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.85em" onclick="handleLogout()">Sair</button>
           <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
         </div>
       </div>
@@ -72,6 +77,25 @@ Digite 'ajuda' para ver os comandos disponíveis.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
+
+    // Auth nav
+    function handleLogout() {
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      window.location.href = 'login.html';
+    }
+    (function updateNavAuth() {
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem('gelateria_user') || 'null'); } catch(e) {}
+      if (user && user.name) {
+        var navLogin = document.getElementById('nav-login');
+        var navUser = document.getElementById('nav-user');
+        var navLogout = document.getElementById('nav-logout');
+        if (navLogin) navLogin.style.display = 'none';
+        if (navUser) { navUser.textContent = '👤 ' + user.name; navUser.style.display = 'inline'; }
+        if (navLogout) navLogout.style.display = 'inline-block';
+      }
+    })();
   </script>
 </body>
 </html>

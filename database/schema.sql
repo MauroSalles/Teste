@@ -163,6 +163,13 @@ BEGIN
   ) THEN
     ALTER TABLE pedidos ADD COLUMN observacao TEXT;
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'pedidos' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE pedidos ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    CREATE INDEX IF NOT EXISTS idx_pedidos_user_id ON pedidos (user_id);
+  END IF;
 END$$;
 
 -- ── Performance indexes ───────────────────────────────────────────────────────

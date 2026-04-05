@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking — Gelateria Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #111; --surface2: #1a1a1a;
+      --accent: #00ff41; --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0; --text-muted: #888; --border: #2a2a2a;
+      --danger: #ff4444; --success: #00cc44; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+      --accent: #1a7a1a; --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a; --text-muted: #666; --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }
+
+    nav { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { font-weight: 700; font-size: 1.2em; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88em; padding: 5px 10px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-dim); color: var(--accent); }
+    #theme-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 1em; }
+    #theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #btn-logout { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; cursor: pointer; color: var(--text-muted); font-size: 0.88em; }
+    #btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    main { max-width: 800px; margin: 0 auto; padding: 24px 20px; }
+    h1 { font-size: 1.5em; margin-bottom: 20px; color: var(--accent); }
+
+    .my-rank { background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; box-shadow: var(--card-shadow); display: none; }
+    .my-rank.visible { display: block; }
+    .my-rank h2 { font-size: 1em; color: var(--accent); margin-bottom: 10px; }
+    .my-rank-info { display: flex; gap: 24px; flex-wrap: wrap; }
+    .rank-stat { text-align: center; }
+    .rank-stat-val { font-size: 1.6em; font-weight: 700; color: var(--accent); }
+    .rank-stat-lbl { font-size: 0.75em; color: var(--text-muted); text-transform: uppercase; }
+
+    .no-login-hint { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; text-align: center; display: none; }
+    .no-login-hint.visible { display: block; }
+    .no-login-hint a { color: var(--accent); text-decoration: none; font-weight: 700; }
+    .no-login-hint a:hover { text-decoration: underline; }
+
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .tab-bar button { flex: 1; background: none; border: none; color: var(--text-muted); padding: 10px; cursor: pointer; font-size: 0.95em; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-bar button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: var(--card-shadow); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.82em; text-transform: uppercase; font-weight: 600; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--accent-dim); }
+    tr.me td { background: rgba(0,255,65,0.07); font-weight: 700; }
+    .pos-medal { font-size: 1.2em; }
+    .empty { text-align: center; color: var(--text-muted); padding: 40px; }
+    .loading { animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="landing.html">🍦 Gelateria Pro</a>
+    <div class="nav-links">
+      <a href="landing.html">🏠 Início</a>
+      <a href="cardapio.html">🛒 Cardápio</a>
+      <a href="ranking.html" class="active">🏆 Ranking</a>
+      <a href="perfil.html">👤 Perfil</a>
+      <a href="login.html" id="nav-login">🔐 Login</a>
+      <span id="nav-user" style="display:none;font-size:0.88em;color:var(--text-muted)"></span>
+      <button id="btn-logout" style="display:none" onclick="handleLogout()">Sair</button>
+      <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    </div>
+  </nav>
+
+  <main>
+    <h1>🏆 Ranking de Pontos</h1>
+
+    <!-- Meu rank (se logado) -->
+    <div class="my-rank" id="my-rank-section">
+      <h2>📍 Meu Rank</h2>
+      <div class="my-rank-info" id="my-rank-info"></div>
+    </div>
+
+    <!-- Hint para não logados -->
+    <div class="no-login-hint" id="no-login-hint">
+      <a href="login.html">Entre para ver seu ranking</a> e competir no leaderboard!
+    </div>
+
+    <div class="tab-bar">
+      <button class="active" id="tab-global" onclick="showTab('global')">🌍 Global</button>
+      <button id="tab-semanal" onclick="showTab('semanal')">📅 Semanal</button>
+    </div>
+
+    <div class="section">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Nível</th>
+              <th>Pontos</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-ranking">
+            <tr><td colspan="4" class="empty loading">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = window.API_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000' : ''
+    );
+
+    var _myUserId = null;
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️'; localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.addEventListener('DOMContentLoaded', function() {
+        var b = document.getElementById('theme-btn'); if (b) b.textContent = '☀️';
+      });
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      window.location.href = 'login.html';
+    }
+
+    function updateNavAuth() {
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem('gelateria_user') || 'null'); } catch(e) {}
+      if (user && user.name) {
+        _myUserId = user.id;
+        document.getElementById('nav-login').style.display = 'none';
+        var nu = document.getElementById('nav-user');
+        nu.textContent = '👤 ' + user.name;
+        nu.style.display = 'inline';
+        document.getElementById('btn-logout').style.display = 'inline-block';
+      }
+    }
+
+    function posLabel(pos) {
+      if (pos === 1) return '🥇';
+      if (pos === 2) return '🥈';
+      if (pos === 3) return '🥉';
+      return String(pos);
+    }
+
+    function renderLeaderboard(data) {
+      var tbody = document.getElementById('tbody-ranking');
+      tbody.innerHTML = '';
+      if (!data || !data.length) {
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.colSpan = 4;
+        td.className = 'empty';
+        td.textContent = 'Nenhum dado disponível.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      data.forEach(function(entry, idx) {
+        var pos = entry.rank || entry.position || (idx + 1);
+        var isMe = _myUserId && (entry.id === _myUserId || entry.user_id === _myUserId);
+        var tr = document.createElement('tr');
+        if (isMe) tr.className = 'me';
+
+        var tdPos = document.createElement('td');
+        tdPos.className = 'pos-medal';
+        tdPos.textContent = posLabel(pos);
+
+        var tdNome = document.createElement('td');
+        tdNome.textContent = entry.name || entry.username || 'Usuário';
+
+        var tdNivel = document.createElement('td');
+        tdNivel.textContent = entry.level || '—';
+
+        var tdPts = document.createElement('td');
+        tdPts.textContent = entry.total_points || entry.points || 0;
+
+        tr.appendChild(tdPos);
+        tr.appendChild(tdNome);
+        tr.appendChild(tdNivel);
+        tr.appendChild(tdPts);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadMyRank() {
+      var token = localStorage.getItem('gelateria_token');
+      if (!token) {
+        document.getElementById('no-login-hint').classList.add('visible');
+        return;
+      }
+      fetch(API + '/api/gamification/leaderboard/my-rank', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data) return;
+          var section = document.getElementById('my-rank-section');
+          section.classList.add('visible');
+          var info = document.getElementById('my-rank-info');
+          info.innerHTML = '';
+          var stats = [
+            { val: posLabel(data.rank || data.position || '—'), lbl: 'Posição' },
+            { val: data.total_points || data.points || 0, lbl: 'Pontos' },
+            { val: data.level || '—', lbl: 'Nível' }
+          ];
+          stats.forEach(function(s) {
+            var div = document.createElement('div');
+            div.className = 'rank-stat';
+            var val = document.createElement('div');
+            val.className = 'rank-stat-val';
+            val.textContent = s.val;
+            var lbl = document.createElement('div');
+            lbl.className = 'rank-stat-lbl';
+            lbl.textContent = s.lbl;
+            div.appendChild(val);
+            div.appendChild(lbl);
+            info.appendChild(div);
+          });
+        })
+        .catch(function() {});
+    }
+
+    function loadTab(tab) {
+      var tbody = document.getElementById('tbody-ranking');
+      tbody.innerHTML = '';
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.colSpan = 4; td.className = 'empty loading'; td.textContent = 'Carregando…';
+      tr.appendChild(td); tbody.appendChild(tr);
+
+      var url = tab === 'global'
+        ? API + '/api/gamification/leaderboard/global?limit=20'
+        : API + '/api/gamification/leaderboard/weekly';
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var list = Array.isArray(data) ? data : (data.leaderboard || data.ranking || []);
+          renderLeaderboard(list);
+        })
+        .catch(function(err) {
+          var tbody2 = document.getElementById('tbody-ranking');
+          tbody2.innerHTML = '';
+          var tr2 = document.createElement('tr');
+          var td2 = document.createElement('td');
+          td2.colSpan = 4; td2.className = 'empty';
+          td2.textContent = 'Erro ao carregar ranking: ' + err.message;
+          tr2.appendChild(td2); tbody2.appendChild(tr2);
+        });
+    }
+
+    function showTab(tab) {
+      document.getElementById('tab-global').classList.toggle('active', tab === 'global');
+      document.getElementById('tab-semanal').classList.toggle('active', tab === 'semanal');
+      loadTab(tab);
+    }
+
+    updateNavAuth();
+    loadMyRank();
+    loadTab('global');
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>
