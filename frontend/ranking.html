@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking — Gelateria Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+    /* Header */
+    .page-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .page-header .brand { font-weight: 700; font-size: 1.1em; color: var(--text-primary); }
+    .page-header nav { display: flex; gap: 10px; align-items: center; }
+    .page-header nav a {
+      color: var(--text-primary); text-decoration: none; font-size: 0.85em;
+      border: 1px solid var(--border-color); padding: 4px 12px;
+      border-radius: 4px; transition: background 0.2s, color 0.2s;
+    }
+    .page-header nav a:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+    #theme-toggle {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-primary); font-size: 0.85em; padding: 4px 12px;
+      cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s;
+      font-family: inherit;
+    }
+    #theme-toggle:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Main */
+    main { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+    h1 { font-size: 1.8em; color: var(--text-primary); margin-bottom: 8px; }
+    .subtitle { color: var(--text-muted); font-size: 0.95em; margin-bottom: 28px; }
+
+    /* My rank card */
+    .my-rank-card {
+      background: var(--bg-secondary); border: 2px solid var(--border-color);
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 28px;
+      box-shadow: 0 0 14px var(--shadow-color);
+    }
+    .my-rank-card h2 { color: var(--text-primary); font-size: 1.1em; margin-bottom: 14px; }
+    .rank-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+    .rank-stat { text-align: center; }
+    .rank-stat-val { font-size: 1.8em; font-weight: 700; color: var(--text-primary); display: block; }
+    .rank-stat-label { font-size: 0.78em; color: var(--text-muted); text-transform: uppercase; }
+
+    .btn-login-cta {
+      display: inline-block; padding: 10px 20px; background: var(--text-primary);
+      color: var(--bg-primary); font-weight: 700; border-radius: 6px;
+      text-decoration: none; font-size: 0.9em; transition: opacity 0.2s;
+    }
+    .btn-login-cta:hover { opacity: 0.85; }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;
+    }
+    .tab-bar button {
+      flex: 1; background: none; border: none; color: var(--text-muted);
+      padding: 12px; cursor: pointer; font-size: 0.95em; font-weight: 600;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .tab-bar button.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+
+    /* Leaderboard table */
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      text-align: left; padding: 10px 12px; font-size: 0.8em;
+      color: var(--text-muted); text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .lb-table td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 0.95em; }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table tr.me td { border: 1px solid var(--border-color); background: rgba(0,255,65,0.05); }
+
+    .pos { font-weight: 700; font-size: 1em; min-width: 36px; display: inline-block; }
+    .pos-medal { font-size: 1.3em; }
+    .player-name { font-weight: 600; color: var(--text-primary); }
+    .player-level { color: var(--text-muted); font-size: 0.85em; }
+    .points { font-weight: 700; color: var(--text-primary); }
+
+    .state-msg {
+      text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 1em;
+    }
+    .state-msg.error { color: #ff4444; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <span class="brand">🏆 Ranking</span>
+    <nav>
+      <a href="index.html">⌨️ Terminal</a>
+      <a href="cardapio.html">🍨 Cardápio</a>
+      <a href="login.html" id="nav-login">🔐 Login</a>
+      <span id="nav-user" style="display:none; align-items:center; gap:6px;">
+        <span id="nav-username" style="font-size:0.85em;"></span>
+        <a href="#" id="nav-logout" onclick="handleNavLogout(event)">Sair</a>
+      </span>
+      <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </nav>
+  </header>
+
+  <main>
+    <h1>🏆 Ranking de Clientes</h1>
+    <p class="subtitle">Os campeões do autoatendimento</p>
+
+    <!-- My rank section -->
+    <div class="my-rank-card" id="my-rank-section"></div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="active" id="tab-global" onclick="switchTab('global')">🏆 Global</button>
+      <button id="tab-weekly" onclick="switchTab('weekly')">📅 Semanal</button>
+    </div>
+
+    <div id="lb-container">
+      <div class="state-msg">Carregando ranking…</div>
+    </div>
+  </main>
+
+  <script>
+    var API = 'http://localhost:5000';
+    var currentTab = 'global';
+    var globalData = null;
+    var weeklyData = null;
+    var currentUserId = null;
+
+    // Theme
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('theme-toggle').textContent = '☀️';
+    }
+
+    // Nav + user detection
+    var token = localStorage.getItem('gelateria_token');
+    var loggedUser = null;
+    try { loggedUser = JSON.parse(localStorage.getItem('gelateria_user')); } catch(e) {}
+
+    (function() {
+      if (token && loggedUser) {
+        currentUserId = loggedUser.id;
+        document.getElementById('nav-login').style.display = 'none';
+        var navUser = document.getElementById('nav-user');
+        navUser.style.display = 'inline-flex';
+        document.getElementById('nav-username').textContent = '👤 ' + (loggedUser.name || 'Usuário');
+      }
+    })();
+    function handleNavLogout(e) {
+      e.preventDefault();
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      document.getElementById('nav-login').style.display = '';
+      document.getElementById('nav-user').style.display = 'none';
+      token = null; loggedUser = null; currentUserId = null;
+      renderMyRank(null);
+    }
+
+    function renderMyRank(rankData) {
+      var section = document.getElementById('my-rank-section');
+      if (!token || !loggedUser) {
+        section.innerHTML = '';
+        var heading = document.createElement('h2');
+        heading.textContent = 'Meu Rank';
+        section.appendChild(heading);
+        var p = document.createElement('p');
+        p.style.color = 'var(--text-muted)';
+        p.style.marginBottom = '12px';
+        p.textContent = 'Faça login para ver sua posição no ranking.';
+        section.appendChild(p);
+        var link = document.createElement('a');
+        link.href = 'login.html';
+        link.className = 'btn-login-cta';
+        link.textContent = 'Entre para ver seu ranking →';
+        section.appendChild(link);
+        return;
+      }
+      section.innerHTML = '';
+      var heading = document.createElement('h2');
+      heading.textContent = '📍 Meu Rank';
+      section.appendChild(heading);
+
+      if (!rankData) {
+        var msg = document.createElement('p');
+        msg.style.color = 'var(--text-muted)';
+        msg.textContent = 'Carregando sua posição…';
+        section.appendChild(msg);
+        return;
+      }
+
+      var stats = document.createElement('div');
+      stats.className = 'rank-stats';
+
+      function makeStat(val, label) {
+        var div = document.createElement('div');
+        div.className = 'rank-stat';
+        var v = document.createElement('span');
+        v.className = 'rank-stat-val';
+        v.textContent = val;
+        var l = document.createElement('span');
+        l.className = 'rank-stat-label';
+        l.textContent = label;
+        div.appendChild(v);
+        div.appendChild(l);
+        return div;
+      }
+
+      stats.appendChild(makeStat('#' + (rankData.rank || rankData.position || '—'), 'Posição'));
+      stats.appendChild(makeStat(rankData.total_points || rankData.points || 0, 'Pontos'));
+      stats.appendChild(makeStat(rankData.level || loggedUser.level || 1, 'Nível'));
+      section.appendChild(stats);
+    }
+
+    function posLabel(pos) {
+      if (pos === 1) return '🥇';
+      if (pos === 2) return '🥈';
+      if (pos === 3) return '🥉';
+      return pos + 'º';
+    }
+
+    function renderLeaderboard(data) {
+      var container = document.getElementById('lb-container');
+      container.innerHTML = '';
+
+      var list = Array.isArray(data) ? data : (data.leaderboard || data.ranking || []);
+      if (list.length === 0) {
+        var msg = document.createElement('div');
+        msg.className = 'state-msg';
+        msg.textContent = 'Nenhum resultado encontrado.';
+        container.appendChild(msg);
+        return;
+      }
+
+      var table = document.createElement('table');
+      table.className = 'lb-table';
+      var thead = document.createElement('thead');
+      thead.innerHTML = '<tr><th>#</th><th>Nome</th><th>Nível</th><th>Pontos</th></tr>';
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+      list.forEach(function(entry, idx) {
+        var pos = entry.rank || entry.position || (idx + 1);
+        var uid = entry.user_id || entry.id;
+        var isMe = currentUserId && uid && (String(uid) === String(currentUserId));
+
+        var tr = document.createElement('tr');
+        if (isMe) tr.className = 'me';
+
+        var tdPos = document.createElement('td');
+        var posEl = document.createElement('span');
+        posEl.className = pos <= 3 ? 'pos-medal' : 'pos';
+        posEl.textContent = posLabel(pos);
+        tdPos.appendChild(posEl);
+        tr.appendChild(tdPos);
+
+        var tdName = document.createElement('td');
+        var nameEl = document.createElement('span');
+        nameEl.className = 'player-name';
+        nameEl.textContent = entry.name || entry.user_name || 'Usuário';
+        tdName.appendChild(nameEl);
+        if (isMe) {
+          var tag = document.createElement('span');
+          tag.style.cssText = 'margin-left:6px; font-size:0.75em; color:var(--text-muted);';
+          tag.textContent = '(você)';
+          tdName.appendChild(tag);
+        }
+        tr.appendChild(tdName);
+
+        var tdLevel = document.createElement('td');
+        var lvlEl = document.createElement('span');
+        lvlEl.className = 'player-level';
+        lvlEl.textContent = 'Nível ' + (entry.level || 1);
+        tdLevel.appendChild(lvlEl);
+        tr.appendChild(tdLevel);
+
+        var tdPts = document.createElement('td');
+        var ptsEl = document.createElement('span');
+        ptsEl.className = 'points';
+        ptsEl.textContent = (entry.total_points || entry.points || 0) + ' pts';
+        tdPts.appendChild(ptsEl);
+        tr.appendChild(tdPts);
+
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+    function showError(msg) {
+      var container = document.getElementById('lb-container');
+      container.innerHTML = '';
+      var el = document.createElement('div');
+      el.className = 'state-msg error';
+      el.textContent = msg;
+      container.appendChild(el);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-global').classList.toggle('active', tab === 'global');
+      document.getElementById('tab-weekly').classList.toggle('active', tab === 'weekly');
+
+      if (tab === 'global') {
+        if (globalData !== null) {
+          renderLeaderboard(globalData);
+        } else {
+          loadGlobal();
+        }
+      } else {
+        if (weeklyData !== null) {
+          renderLeaderboard(weeklyData);
+        } else {
+          loadWeekly();
+        }
+      }
+    }
+
+    function loadGlobal() {
+      var container = document.getElementById('lb-container');
+      container.innerHTML = '<div class="state-msg">Carregando ranking global…</div>';
+      fetch(API + '/api/gamification/leaderboard/global?limit=20')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          globalData = data;
+          if (currentTab === 'global') renderLeaderboard(data);
+        })
+        .catch(function() {
+          if (currentTab === 'global') showError('Não foi possível conectar ao servidor.');
+        });
+    }
+
+    function loadWeekly() {
+      var container = document.getElementById('lb-container');
+      container.innerHTML = '<div class="state-msg">Carregando ranking semanal…</div>';
+      fetch(API + '/api/gamification/leaderboard/weekly')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          weeklyData = data;
+          if (currentTab === 'weekly') renderLeaderboard(data);
+        })
+        .catch(function() {
+          if (currentTab === 'weekly') showError('Não foi possível conectar ao servidor.');
+        });
+    }
+
+    function loadMyRank() {
+      if (!token) { renderMyRank(null); return; }
+      renderMyRank(null); // show loading state
+      fetch(API + '/api/gamification/leaderboard/my-rank', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { renderMyRank(data); })
+        .catch(function() { renderMyRank({}); });
+    }
+
+    // Init
+    loadMyRank();
+    loadGlobal();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>

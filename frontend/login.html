@@ -188,6 +188,10 @@
         <label for="reg-password">Senha</label>
         <input type="password" id="reg-password" required placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" />
       </div>
+      <div class="form-group">
+        <label for="reg-confirm">Confirmar Senha</label>
+        <input type="password" id="reg-confirm" required placeholder="Repita a senha" minlength="8" autocomplete="new-password" />
+      </div>
       <button type="submit" class="btn-submit" id="reg-btn">Criar Conta</button>
       <div class="message" id="reg-msg"></div>
     </form>
@@ -289,10 +293,10 @@
             showMessage('login-msg', res.data.error || 'Erro ao fazer login', 'error');
             return;
           }
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
+          localStorage.setItem('gelateria_token', res.data.token);
+          localStorage.setItem('gelateria_user', JSON.stringify(res.data.user));
           showMessage('login-msg', 'Login realizado com sucesso!', 'success');
-          setTimeout(showUserProfile, 500);
+          setTimeout(function() { window.location.href = 'index.html'; }, 800);
         })
         .catch(function(err) {
           showMessage('login-msg', 'Erro de conexão: ' + err.message, 'error');
@@ -308,7 +312,18 @@
       var name = document.getElementById('reg-name').value.trim();
       var email = document.getElementById('reg-email').value.trim();
       var password = document.getElementById('reg-password').value;
+      var confirm = document.getElementById('reg-confirm').value;
       var btn = document.getElementById('reg-btn');
+
+      if (password.length < 8) {
+        showMessage('reg-msg', 'A senha deve ter pelo menos 8 caracteres', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        showMessage('reg-msg', 'As senhas não coincidem', 'error');
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = 'Criando…';
 
@@ -323,13 +338,13 @@
             showMessage('reg-msg', res.data.error || 'Erro ao criar conta', 'error');
             return;
           }
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
+          localStorage.setItem('gelateria_token', res.data.token);
+          localStorage.setItem('gelateria_user', JSON.stringify(res.data.user));
           showMessage('reg-msg', 'Conta criada com sucesso!', 'success');
-          setTimeout(showUserProfile, 500);
+          setTimeout(function() { window.location.href = 'index.html'; }, 800);
         })
         .catch(function(err) {
-          showMessage('reg-msg', 'Erro de conexão: ' + err.message, 'error');
+          showMessage('reg-msg', 'Não foi possível conectar ao servidor', 'error');
         })
         .finally(function() {
           btn.disabled = false;
@@ -338,7 +353,7 @@
     }
 
     function showUserProfile() {
-      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      var user = JSON.parse(localStorage.getItem('gelateria_user') || 'null');
       if (!user) return;
 
       document.getElementById('auth-forms').style.display = 'none';
@@ -351,8 +366,8 @@
     }
 
     function handleLogout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
       document.getElementById('user-profile').classList.remove('visible');
       document.getElementById('auth-forms').style.display = '';
       document.getElementById('login-form').reset();
@@ -363,7 +378,7 @@
     }
 
     // On page load, check if already logged in
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('gelateria_token')) {
       showUserProfile();
     }
 

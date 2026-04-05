@@ -14,11 +14,17 @@
       <div id="header-top">
         <span class="prompt">🍦 Gelateria Sistema v2.0</span>
         <div id="header-nav">
+          <a href="cardapio.html">🍨 Cardápio</a>
+          <a href="ranking.html">🏆 Ranking</a>
           <a href="admin.html">🛠️ Admin</a>
           <a href="dashboard.html">📊 Dashboard</a>
           <a href="estoque.html">📦 Estoque</a>
           <a href="relatorios.html">📈 Relatórios</a>
-          <a href="login.html">🔐 Login</a>
+          <a href="login.html" id="nav-login">🔐 Login</a>
+          <span id="nav-user" style="display:none">
+            <span id="nav-username" style="font-size:0.85em; padding:3px 6px;"></span>
+            <a href="#" id="nav-logout" onclick="handleNavLogout(event)">Sair</a>
+          </span>
           <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙</button>
         </div>
       </div>
@@ -71,6 +77,27 @@ Digite 'ajuda' para ver os comandos disponíveis.
     // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    // Nav login/logout logic
+    (function() {
+      var token = localStorage.getItem('gelateria_token');
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem('gelateria_user')); } catch(e) {}
+      if (token && user) {
+        document.getElementById('nav-login').style.display = 'none';
+        document.getElementById('nav-user').style.display = 'inline-flex';
+        document.getElementById('nav-user').style.alignItems = 'center';
+        document.getElementById('nav-user').style.gap = '6px';
+        var nameEl = document.getElementById('nav-username');
+        nameEl.textContent = '👤 ' + (user.name || 'Usuário');
+      }
+    })();
+    function handleNavLogout(e) {
+      e.preventDefault();
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      document.getElementById('nav-login').style.display = '';
+      document.getElementById('nav-user').style.display = 'none';
     }
   </script>
 </body>
