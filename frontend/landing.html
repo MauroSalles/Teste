@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍦 Gelateria Pro — Autoatendimento</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+    /* Header nav */
+    .lp-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .lp-header .brand { font-weight: 700; font-size: 1.1em; color: var(--text-primary); }
+    .lp-header nav { display: flex; gap: 10px; align-items: center; }
+    .lp-header nav a {
+      color: var(--text-primary); text-decoration: none; font-size: 0.85em;
+      border: 1px solid var(--border-color); padding: 4px 12px;
+      border-radius: 4px; transition: background 0.2s, color 0.2s;
+    }
+    .lp-header nav a:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+    #theme-toggle {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-primary); font-size: 0.85em; padding: 4px 12px;
+      cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s;
+      font-family: inherit;
+    }
+    #theme-toggle:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Main content */
+    main { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+
+    /* Hero */
+    .hero { text-align: center; padding: 60px 0 48px; }
+    .hero-icon { font-size: 5em; display: block; margin-bottom: 16px; }
+    .hero h1 { font-size: 2.6em; color: var(--text-primary); margin-bottom: 12px; }
+    .hero p { font-size: 1.15em; color: var(--text-muted); margin-bottom: 32px; }
+    .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block; padding: 12px 28px; background: var(--text-primary);
+      color: var(--bg-primary); font-weight: 700; border-radius: 6px;
+      text-decoration: none; font-size: 1em; transition: opacity 0.2s;
+      border: none; cursor: pointer;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-outline {
+      display: inline-block; padding: 12px 28px; border: 2px solid var(--border-color);
+      color: var(--text-primary); font-weight: 700; border-radius: 6px;
+      text-decoration: none; font-size: 1em; transition: background 0.2s, color 0.2s;
+    }
+    .btn-outline:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* API status badge */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 20px; font-size: 0.9em;
+      border: 1px solid var(--border-color); margin-top: 24px;
+      background: var(--bg-secondary);
+    }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .status-dot.online { background: #00cc44; box-shadow: 0 0 6px #00cc44; }
+    .status-dot.offline { background: #ff4444; box-shadow: 0 0 6px #ff4444; }
+
+    /* Feature cards */
+    .features { margin: 40px 0; }
+    .features h2 { text-align: center; font-size: 1.4em; color: var(--text-primary); margin-bottom: 28px; }
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px;
+    }
+    .card {
+      background: var(--bg-secondary); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 28px 20px; text-align: center;
+      box-shadow: 0 0 12px var(--shadow-color); transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card-icon { font-size: 2.5em; display: block; margin-bottom: 12px; }
+    .card h3 { color: var(--text-primary); font-size: 1em; margin-bottom: 8px; }
+    .card p { color: var(--text-muted); font-size: 0.85em; line-height: 1.5; }
+
+    /* Footer */
+    footer {
+      text-align: center; color: var(--text-muted); font-size: 0.85em;
+      padding: 32px 24px; border-top: 1px solid var(--border-color);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <header class="lp-header">
+    <span class="brand">🍦 Gelateria Pro</span>
+    <nav>
+      <a href="index.html">⌨️ Terminal</a>
+      <a href="cardapio.html">🍨 Cardápio</a>
+      <a href="ranking.html">🏆 Ranking</a>
+      <a href="login.html" id="nav-login">🔐 Login</a>
+      <span id="nav-user" style="display:none; align-items:center; gap:6px;">
+        <span id="nav-username" style="font-size:0.85em;"></span>
+        <a href="#" id="nav-logout" onclick="handleNavLogout(event)">Sair</a>
+      </span>
+      <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <span class="hero-icon">🍦</span>
+      <h1>Gelateria Pro</h1>
+      <p>O melhor autoatendimento de sorvetes e açaís</p>
+      <div class="hero-cta">
+        <a href="cardapio.html" class="btn-primary">Ver Cardápio 🛒</a>
+        <a href="login.html" class="btn-outline">Entrar →</a>
+      </div>
+      <div>
+        <span class="status-badge" id="api-status">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Verificando…</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- Feature cards -->
+    <section class="features">
+      <h2>Tudo que você precisa</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <span class="card-icon">🛒</span>
+          <h3>Cardápio Online</h3>
+          <p>Veja os sabores disponíveis, preços e faça seu pedido diretamente pelo site.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🏆</span>
+          <h3>Ranking de Clientes</h3>
+          <p>Compita com outros clientes e suba no leaderboard global e semanal.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🎮</span>
+          <h3>Gamificação</h3>
+          <p>Ganhe pontos, desbloqueie badges e suba de nível a cada pedido realizado.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📊</span>
+          <h3>Dashboard</h3>
+          <p>Acompanhe métricas de vendas, estoque e relatórios em tempo real.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>🍦 Gelateria Pro — Projeto Integrador &copy; 2024</p>
+  </footer>
+
+  <script>
+    var API = 'http://localhost:5000';
+
+    // Theme
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('theme-toggle').textContent = '☀️';
+    }
+
+    // Nav user
+    (function() {
+      var token = localStorage.getItem('gelateria_token');
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem('gelateria_user')); } catch(e) {}
+      if (token && user) {
+        document.getElementById('nav-login').style.display = 'none';
+        var navUser = document.getElementById('nav-user');
+        navUser.style.display = 'inline-flex';
+        document.getElementById('nav-username').textContent = '👤 ' + (user.name || 'Usuário');
+      }
+    })();
+    function handleNavLogout(e) {
+      e.preventDefault();
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      document.getElementById('nav-login').style.display = '';
+      document.getElementById('nav-user').style.display = 'none';
+    }
+
+    // API status check
+    var dot = document.getElementById('status-dot');
+    var txt = document.getElementById('status-text');
+    fetch(API + '/health')
+      .then(function(r) {
+        if (r.ok) {
+          dot.className = 'status-dot online';
+          txt.textContent = '🟢 Sistema Online';
+        } else {
+          dot.className = 'status-dot offline';
+          txt.textContent = '🔴 Sistema com problemas';
+        }
+      })
+      .catch(function() {
+        dot.className = 'status-dot offline';
+        txt.textContent = '🔴 Offline';
+      });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>

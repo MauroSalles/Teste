@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍨 Cardápio — Gelateria Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+    /* Header */
+    .page-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .page-header .brand { font-weight: 700; font-size: 1.1em; color: var(--text-primary); }
+    .page-header nav { display: flex; gap: 10px; align-items: center; }
+    .page-header nav a {
+      color: var(--text-primary); text-decoration: none; font-size: 0.85em;
+      border: 1px solid var(--border-color); padding: 4px 12px;
+      border-radius: 4px; transition: background 0.2s, color 0.2s;
+    }
+    .page-header nav a:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+    #theme-toggle {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-primary); font-size: 0.85em; padding: 4px 12px;
+      cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s;
+      font-family: inherit;
+    }
+    #theme-toggle:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+
+    /* Main */
+    main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+    h1 { font-size: 1.8em; color: var(--text-primary); margin-bottom: 8px; }
+    .subtitle { color: var(--text-muted); font-size: 0.95em; margin-bottom: 28px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .filter-bar label { color: var(--text-muted); font-size: 0.9em; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .filter-bar input[type="checkbox"] { accent-color: var(--text-primary); width: 16px; height: 16px; cursor: pointer; }
+
+    /* Loading / Error */
+    .state-msg {
+      text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 1.1em;
+    }
+    .state-msg.error { color: #ff4444; }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .flavor-card {
+      background: var(--bg-secondary); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 20px; display: flex; flex-direction: column;
+      gap: 10px; box-shadow: 0 0 10px var(--shadow-color); transition: transform 0.2s;
+    }
+    .flavor-card:hover { transform: translateY(-3px); }
+
+    .card-name { font-size: 1.15em; font-weight: 700; color: var(--text-primary); }
+    .card-price { font-size: 1.4em; font-weight: 700; color: var(--text-primary); }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 0.8em; font-weight: 600;
+    }
+    .badge.available { background: rgba(0,204,68,0.15); color: #00cc44; border: 1px solid rgba(0,204,68,0.3); }
+    .badge.esgotado { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); }
+
+    .btn-pedido {
+      margin-top: 4px; padding: 9px 14px; border: 1px solid var(--border-color);
+      background: var(--text-primary); color: var(--bg-primary); font-weight: 700;
+      border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: opacity 0.2s;
+      width: 100%;
+    }
+    .btn-pedido:hover { opacity: 0.85; }
+    .btn-pedido:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Inline order form */
+    .order-form {
+      display: none; margin-top: 8px; padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
+    .order-form.open { display: block; }
+    .form-row { margin-bottom: 10px; }
+    .form-row label { display: block; font-size: 0.8em; color: var(--text-muted); margin-bottom: 4px; }
+    .form-row input, .form-row select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--border-color);
+      background: var(--bg-header); color: var(--text-primary);
+      border-radius: 6px; font-size: 0.9em; outline: none;
+    }
+    .form-row input:focus, .form-row select:focus { border-color: var(--text-primary); }
+    .form-row select option { background: var(--bg-primary); }
+    .btn-confirmar {
+      width: 100%; padding: 9px; background: var(--text-primary); color: var(--bg-primary);
+      border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;
+      transition: opacity 0.2s;
+    }
+    .btn-confirmar:hover { opacity: 0.85; }
+    .btn-confirmar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .order-msg { font-size: 0.82em; margin-top: 8px; text-align: center; }
+    .order-msg.success { color: #00cc44; }
+    .order-msg.error { color: #ff4444; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <span class="brand">🍨 Cardápio</span>
+    <nav>
+      <a href="index.html">⌨️ Terminal</a>
+      <a href="ranking.html">🏆 Ranking</a>
+      <a href="login.html" id="nav-login">🔐 Login</a>
+      <span id="nav-user" style="display:none; align-items:center; gap:6px;">
+        <span id="nav-username" style="font-size:0.85em;"></span>
+        <a href="#" id="nav-logout" onclick="handleNavLogout(event)">Sair</a>
+      </span>
+      <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </nav>
+  </header>
+
+  <main>
+    <h1>🍨 Nossos Sabores</h1>
+    <p class="subtitle">Escolha seu favorito e faça seu pedido online</p>
+
+    <div class="filter-bar">
+      <label>
+        <input type="checkbox" id="filter-disponivel" onchange="applyFilter()" />
+        Mostrar apenas disponíveis
+      </label>
+    </div>
+
+    <div id="cards-container">
+      <div class="state-msg" id="loading-msg">Carregando sabores…</div>
+    </div>
+  </main>
+
+  <script>
+    var API = 'http://localhost:5000';
+    var allFlavors = [];
+    var stockMap = {};
+
+    // Theme
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('theme-toggle').textContent = '☀️';
+    }
+
+    // Nav
+    (function() {
+      var token = localStorage.getItem('gelateria_token');
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem('gelateria_user')); } catch(e) {}
+      if (token && user) {
+        document.getElementById('nav-login').style.display = 'none';
+        var navUser = document.getElementById('nav-user');
+        navUser.style.display = 'inline-flex';
+        document.getElementById('nav-username').textContent = '👤 ' + (user.name || 'Usuário');
+      }
+    })();
+    function handleNavLogout(e) {
+      e.preventDefault();
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      document.getElementById('nav-login').style.display = '';
+      document.getElementById('nav-user').style.display = 'none';
+    }
+
+    function formatPrice(val) {
+      return 'R$ ' + parseFloat(val).toFixed(2).replace('.', ',');
+    }
+
+    function renderCards(flavors) {
+      var container = document.getElementById('cards-container');
+      if (flavors.length === 0) {
+        container.innerHTML = '';
+        var msg = document.createElement('div');
+        msg.className = 'state-msg';
+        msg.textContent = 'Nenhum sabor encontrado.';
+        container.appendChild(msg);
+        return;
+      }
+      container.innerHTML = '';
+      var grid = document.createElement('div');
+      grid.className = 'cards-grid';
+      flavors.forEach(function(f) {
+        var qty = stockMap[f.id] !== undefined ? stockMap[f.id] : -1;
+        var available = qty > 0;
+
+        var card = document.createElement('div');
+        card.className = 'flavor-card';
+        card.dataset.sabor = f.id;
+
+        var nameEl = document.createElement('div');
+        nameEl.className = 'card-name';
+        nameEl.textContent = f.nome;
+        card.appendChild(nameEl);
+
+        var priceEl = document.createElement('div');
+        priceEl.className = 'card-price';
+        priceEl.textContent = formatPrice(f.preco);
+        card.appendChild(priceEl);
+
+        var badge = document.createElement('span');
+        if (qty < 0) {
+          badge.className = 'badge available';
+          badge.textContent = '✅ Disponível';
+        } else if (available) {
+          badge.className = 'badge available';
+          badge.textContent = '✅ Disponível (' + qty + ' un.)';
+        } else {
+          badge.className = 'badge esgotado';
+          badge.textContent = '⚠️ Esgotado';
+        }
+        card.appendChild(badge);
+
+        var btn = document.createElement('button');
+        btn.className = 'btn-pedido';
+        btn.textContent = '🛒 Fazer Pedido';
+        btn.disabled = qty === 0;
+        btn.onclick = function() { toggleOrderForm(card, f.id); };
+        card.appendChild(btn);
+
+        var form = document.createElement('div');
+        form.className = 'order-form';
+        form.id = 'order-form-' + f.id;
+        buildOrderForm(f.id, form);
+        card.appendChild(form);
+
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
+    }
+
+    function buildOrderForm(saborId, formEl) {
+      var rowQty = document.createElement('div');
+      rowQty.className = 'form-row';
+      var lblQty = document.createElement('label');
+      lblQty.textContent = 'Quantidade';
+      var inputQty = document.createElement('input');
+      inputQty.type = 'number';
+      inputQty.id = 'qty-' + saborId;
+      inputQty.min = '1';
+      inputQty.max = '99';
+      inputQty.value = '1';
+      rowQty.appendChild(lblQty);
+      rowQty.appendChild(inputQty);
+      formEl.appendChild(rowQty);
+
+      var rowPag = document.createElement('div');
+      rowPag.className = 'form-row';
+      var lblPag = document.createElement('label');
+      lblPag.textContent = 'Pagamento';
+      var select = document.createElement('select');
+      select.id = 'pag-' + saborId;
+      [['dinheiro', '💵 Dinheiro'], ['cartão', '💳 Cartão'], ['pix', '📲 Pix']].forEach(function(opt) {
+        var o = document.createElement('option');
+        o.value = opt[0];
+        o.textContent = opt[1];
+        select.appendChild(o);
+      });
+      rowPag.appendChild(lblPag);
+      rowPag.appendChild(select);
+      formEl.appendChild(rowPag);
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-confirmar';
+      btn.textContent = 'Confirmar Pedido';
+      btn.addEventListener('click', function() { submitOrder(saborId, btn); });
+      formEl.appendChild(btn);
+
+      var msg = document.createElement('div');
+      msg.className = 'order-msg';
+      msg.id = 'order-msg-' + saborId;
+      formEl.appendChild(msg);
+    }
+
+    function toggleOrderForm(card, saborId) {
+      var form = document.getElementById('order-form-' + saborId);
+      if (form.classList.contains('open')) {
+        form.classList.remove('open');
+      } else {
+        // Close all open forms first
+        document.querySelectorAll('.order-form.open').forEach(function(f) { f.classList.remove('open'); });
+        form.classList.add('open');
+      }
+    }
+
+    function submitOrder(saborId, btn) {
+      var token = localStorage.getItem('gelateria_token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+      var qty = parseInt(document.getElementById('qty-' + saborId).value, 10);
+      var pagamento = document.getElementById('pag-' + saborId).value;
+      var msgEl = document.getElementById('order-msg-' + saborId);
+
+      if (!qty || qty < 1) {
+        msgEl.className = 'order-msg error';
+        msgEl.textContent = 'Quantidade inválida';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+      msgEl.textContent = '';
+      msgEl.className = 'order-msg';
+
+      fetch(API + '/api/pedidos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ sabor_id: saborId, quantidade: qty, metodo_pagamento: pagamento })
+      })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          if (!res.ok) {
+            msgEl.className = 'order-msg error';
+            msgEl.textContent = res.data.error || 'Erro ao fazer pedido';
+          } else {
+            msgEl.className = 'order-msg success';
+            msgEl.textContent = '✅ Pedido realizado com sucesso!';
+            setTimeout(function() {
+              document.getElementById('order-form-' + saborId).classList.remove('open');
+              msgEl.textContent = '';
+            }, 2000);
+          }
+        })
+        .catch(function() {
+          msgEl.className = 'order-msg error';
+          msgEl.textContent = 'Não foi possível conectar ao servidor';
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Confirmar Pedido';
+        });
+    }
+
+    function applyFilter() {
+      var onlyAvailable = document.getElementById('filter-disponivel').checked;
+      var filtered = onlyAvailable
+        ? allFlavors.filter(function(f) { return stockMap[f.id] === undefined || stockMap[f.id] > 0; })
+        : allFlavors;
+      renderCards(filtered);
+    }
+
+    function loadData() {
+      var container = document.getElementById('cards-container');
+
+      Promise.all([
+        fetch(API + '/api/sabores').then(function(r) { return r.json(); }),
+        fetch(API + '/api/estoque').then(function(r) { return r.json(); })
+      ])
+        .then(function(results) {
+          var saborData = results[0];
+          var estoqueData = results[1];
+
+          // Build stock map: sabor_id -> quantidade
+          var estList = Array.isArray(estoqueData) ? estoqueData : (estoqueData.estoque || []);
+          estList.forEach(function(item) {
+            stockMap[item.sabor_id] = item.quantidade;
+          });
+
+          allFlavors = Array.isArray(saborData) ? saborData : (saborData.sabores || []);
+          renderCards(allFlavors);
+        })
+        .catch(function() {
+          container.innerHTML = '';
+          var msg = document.createElement('div');
+          msg.className = 'state-msg error';
+          msg.textContent = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
+          container.appendChild(msg);
+        });
+    }
+
+    loadData();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>
