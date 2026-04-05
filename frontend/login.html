@@ -289,9 +289,8 @@
             showMessage('login-msg', res.data.error || 'Erro ao fazer login', 'error');
             return;
           }
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
-          showMessage('login-msg', 'Login realizado com sucesso!', 'success');
+          localStorage.setItem('gelateria_token', res.data.token);
+          localStorage.setItem('gelateria_user', JSON.stringify(res.data.user));
           setTimeout(showUserProfile, 500);
         })
         .catch(function(err) {
@@ -323,9 +322,8 @@
             showMessage('reg-msg', res.data.error || 'Erro ao criar conta', 'error');
             return;
           }
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
-          showMessage('reg-msg', 'Conta criada com sucesso!', 'success');
+          localStorage.setItem('gelateria_token', res.data.token);
+          localStorage.setItem('gelateria_user', JSON.stringify(res.data.user));
           setTimeout(showUserProfile, 500);
         })
         .catch(function(err) {
@@ -338,7 +336,7 @@
     }
 
     function showUserProfile() {
-      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      var user = JSON.parse(localStorage.getItem('gelateria_user') || 'null');
       if (!user) return;
 
       document.getElementById('auth-forms').style.display = 'none';
@@ -351,8 +349,8 @@
     }
 
     function handleLogout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
       document.getElementById('user-profile').classList.remove('visible');
       document.getElementById('auth-forms').style.display = '';
       document.getElementById('login-form').reset();
@@ -363,7 +361,7 @@
     }
 
     // On page load, check if already logged in
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('gelateria_token')) {
       showUserProfile();
     }
 

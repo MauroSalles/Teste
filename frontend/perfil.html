@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>👤 Meu Perfil — Gelateria Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#00ff41" />
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #111; --surface2: #1a1a1a;
+      --accent: #00ff41; --accent-dim: rgba(0,255,65,0.15);
+      --text: #e0e0e0; --text-muted: #888; --border: #2a2a2a;
+      --danger: #ff4444; --success: #00cc44;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+      --accent: #1a7a1a; --accent-dim: rgba(26,122,26,0.1);
+      --text: #1a1a1a; --text-muted: #666; --border: #ddd;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }
+
+    nav { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { font-weight: 700; font-size: 1.2em; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88em; padding: 5px 10px; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-dim); color: var(--accent); }
+    #theme-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 1em; }
+    #btn-logout { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; cursor: pointer; color: var(--text-muted); font-size: 0.88em; }
+    #btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    main { max-width: 800px; margin: 0 auto; padding: 24px 20px; }
+
+    .profile-header { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--card-shadow); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 2.2em; flex-shrink: 0; border: 2px solid var(--accent); }
+    .profile-info h1 { font-size: 1.4em; color: var(--accent); margin-bottom: 4px; }
+    .profile-info p { color: var(--text-muted); font-size: 0.9em; }
+    .profile-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
+    .stat { text-align: center; }
+    .stat-val { font-size: 1.5em; font-weight: 700; color: var(--accent); }
+    .stat-lbl { font-size: 0.75em; color: var(--text-muted); text-transform: uppercase; }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--card-shadow); margin-bottom: 20px; }
+    .section h2 { font-size: 1em; color: var(--text-muted); margin-bottom: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .xp-bar-wrap { background: var(--surface2); border-radius: 8px; height: 16px; overflow: hidden; margin-bottom: 8px; }
+    .xp-bar-fill { height: 100%; background: var(--accent); border-radius: 8px; transition: width 0.8s ease; }
+    .xp-text { font-size: 0.82em; color: var(--text-muted); }
+
+    .badges-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.85em; display: flex; align-items: center; gap: 6px; }
+    .badge-icon { font-size: 1.3em; }
+
+    .challenges-list { display: flex; flex-direction: column; gap: 10px; }
+    .challenge-item { display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border-radius: 8px; padding: 10px 14px; gap: 10px; }
+    .challenge-name { font-size: 0.9em; }
+    .challenge-progress { font-size: 0.82em; color: var(--text-muted); white-space: nowrap; }
+    .challenge-done { color: var(--success); font-weight: 700; }
+
+    .fidelidade-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .pontos-val { font-size: 2em; font-weight: 700; color: var(--accent); }
+    .btn-resgatar { padding: 10px 20px; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.9em; }
+    .btn-resgatar:hover { background: var(--accent); color: #000; }
+    .btn-resgatar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-roleta { width: 100%; padding: 13px; background: var(--accent); color: #000; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; transition: opacity 0.2s; }
+    .btn-roleta:hover { opacity: 0.85; }
+    .btn-roleta:disabled { opacity: 0.5; cursor: not-allowed; }
+    .roleta-result { text-align: center; margin-top: 12px; padding: 12px; border-radius: 8px; display: none; background: var(--accent-dim); border: 1px solid var(--accent); }
+    .roleta-result.visible { display: block; }
+
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 0.88em; margin-top: 10px; display: none; }
+    .msg.ok { display: block; background: rgba(0,204,68,0.12); color: var(--success); border: 1px solid rgba(0,204,68,0.3); }
+    .msg.err { display: block; background: rgba(255,68,68,0.12); color: var(--danger); border: 1px solid rgba(255,68,68,0.3); }
+
+    .empty { color: var(--text-muted); font-size: 0.9em; padding: 12px 0; }
+    .loading { animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="landing.html">🍦 Gelateria Pro</a>
+    <div class="nav-links">
+      <a href="landing.html">🏠 Início</a>
+      <a href="cardapio.html">🛒 Cardápio</a>
+      <a href="ranking.html">🏆 Ranking</a>
+      <a href="perfil.html" class="active">👤 Perfil</a>
+      <button id="btn-logout" onclick="handleLogout()">Sair</button>
+      <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <!-- profile header -->
+    <div class="profile-header">
+      <div class="avatar" id="profile-avatar">🍦</div>
+      <div class="profile-info">
+        <h1 id="profile-name" class="loading">Carregando…</h1>
+        <p id="profile-email"></p>
+        <div class="profile-stats">
+          <div class="stat">
+            <div class="stat-val" id="profile-level">—</div>
+            <div class="stat-lbl">Nível</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="profile-points">—</div>
+            <div class="stat-lbl">Pontos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XP Progress -->
+    <div class="section">
+      <h2>⭐ Progresso de XP</h2>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-fill" id="xp-bar" style="width:0%"></div>
+      </div>
+      <p class="xp-text" id="xp-text" class="loading">Carregando…</p>
+    </div>
+
+    <!-- Badges -->
+    <div class="section">
+      <h2>🏅 Badges Conquistados</h2>
+      <div class="badges-grid" id="badges-grid">
+        <span class="empty loading">Carregando…</span>
+      </div>
+    </div>
+
+    <!-- Desafios diários -->
+    <div class="section">
+      <h2>🎯 Desafios do Dia</h2>
+      <div class="challenges-list" id="challenges-list">
+        <span class="empty loading">Carregando…</span>
+      </div>
+    </div>
+
+    <!-- Roleta -->
+    <div class="section">
+      <h2>🎰 Roleta de Recompensas</h2>
+      <button class="btn-roleta" id="btn-roleta" onclick="girarRoleta()">🎰 Girar Roleta</button>
+      <div class="roleta-result" id="roleta-result"></div>
+    </div>
+
+    <!-- Fidelidade -->
+    <div class="section">
+      <h2>💎 Pontos de Fidelidade</h2>
+      <div class="fidelidade-row">
+        <div>
+          <div class="pontos-val" id="pontos-fidelidade">—</div>
+          <div style="font-size:0.8em;color:var(--text-muted)">pontos acumulados</div>
+        </div>
+        <button class="btn-resgatar" id="btn-resgatar" onclick="resgatarPontos()">🎁 Resgatar</button>
+      </div>
+      <div class="msg" id="fidelidade-msg"></div>
+    </div>
+  </main>
+
+  <script>
+    const API = window.API_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000' : ''
+    );
+
+    var _token = localStorage.getItem('gelateria_token');
+    var _user = null;
+    try { _user = JSON.parse(localStorage.getItem('gelateria_user') || 'null'); } catch(e) {}
+
+    // Redirect if not logged in
+    if (!_token || !_user) {
+      window.location.href = 'login.html?redirect=perfil.html';
+    }
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-btn');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light'); btn.textContent = '☀️'; localStorage.setItem('theme', 'light');
+      }
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.addEventListener('DOMContentLoaded', function() {
+        var b = document.getElementById('theme-btn'); if (b) b.textContent = '☀️';
+      });
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('gelateria_token');
+      localStorage.removeItem('gelateria_user');
+      window.location.href = 'login.html';
+    }
+
+    function authHeaders() {
+      return { 'Authorization': 'Bearer ' + _token, 'Content-Type': 'application/json' };
+    }
+
+    function loadProfile() {
+      fetch(API + '/api/auth/me', { headers: authHeaders() })
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r); })
+        .then(function(user) {
+          document.getElementById('profile-name').textContent = user.name || '—';
+          document.getElementById('profile-name').classList.remove('loading');
+          document.getElementById('profile-email').textContent = user.email || '';
+          document.getElementById('profile-level').textContent = user.level || 1;
+          document.getElementById('profile-points').textContent = user.total_points || 0;
+          // Update stored user
+          localStorage.setItem('gelateria_user', JSON.stringify(user));
+        })
+        .catch(function() {
+          if (_user) {
+            document.getElementById('profile-name').textContent = _user.name || '—';
+            document.getElementById('profile-name').classList.remove('loading');
+            document.getElementById('profile-email').textContent = _user.email || '';
+            document.getElementById('profile-level').textContent = _user.level || 1;
+            document.getElementById('profile-points').textContent = _user.total_points || 0;
+          }
+        });
+    }
+
+    function loadXP() {
+      fetch(API + '/api/gamification/level', { headers: authHeaders() })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data) return;
+          var bar = document.getElementById('xp-bar');
+          var txt = document.getElementById('xp-text');
+          var pct = data.progress_percent || data.progress || 0;
+          bar.style.width = Math.min(100, Math.round(pct)) + '%';
+          var cur = data.current_xp || data.xp || 0;
+          var nxt = data.next_level_xp || data.xp_for_next || '?';
+          txt.textContent = 'XP: ' + cur + ' / ' + nxt + ' para o próximo nível';
+          txt.classList.remove('loading');
+        })
+        .catch(function() {
+          document.getElementById('xp-text').textContent = 'Dados de XP indisponíveis.';
+          document.getElementById('xp-text').classList.remove('loading');
+        });
+    }
+
+    function loadBadges() {
+      fetch(API + '/api/gamification/badges', { headers: authHeaders() })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          var grid = document.getElementById('badges-grid');
+          grid.innerHTML = '';
+          var badges = Array.isArray(data) ? data : (data && data.badges ? data.badges : []);
+          if (!badges.length) {
+            var d = document.createElement('span');
+            d.className = 'empty';
+            d.textContent = 'Nenhum badge conquistado ainda. Continue pedindo! 🍦';
+            grid.appendChild(d);
+            return;
+          }
+          badges.forEach(function(b) {
+            var item = document.createElement('div');
+            item.className = 'badge-item';
+            var icon = document.createElement('span');
+            icon.className = 'badge-icon';
+            icon.textContent = b.icon || '🏅';
+            var name = document.createElement('span');
+            name.textContent = b.name || b.badge_type || 'Badge';
+            item.appendChild(icon);
+            item.appendChild(name);
+            grid.appendChild(item);
+          });
+        })
+        .catch(function() {
+          var grid = document.getElementById('badges-grid');
+          grid.innerHTML = '';
+          var d = document.createElement('span');
+          d.className = 'empty';
+          d.textContent = 'Erro ao carregar badges.';
+          grid.appendChild(d);
+        });
+    }
+
+    function loadChallenges() {
+      fetch(API + '/api/gamification/challenges/daily', { headers: authHeaders() })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          var list = document.getElementById('challenges-list');
+          list.innerHTML = '';
+          var challenges = Array.isArray(data) ? data : (data && data.challenges ? data.challenges : []);
+          if (!challenges.length) {
+            var d = document.createElement('span');
+            d.className = 'empty';
+            d.textContent = 'Nenhum desafio disponível hoje.';
+            list.appendChild(d);
+            return;
+          }
+          challenges.forEach(function(c) {
+            var item = document.createElement('div');
+            item.className = 'challenge-item';
+            var name = document.createElement('span');
+            name.className = 'challenge-name';
+            name.textContent = (c.icon || '🎯') + ' ' + (c.title || c.name || c.description || 'Desafio');
+            var prog = document.createElement('span');
+            var done = c.completed || c.done || false;
+            if (done) {
+              prog.className = 'challenge-done';
+              prog.textContent = '✅';
+            } else {
+              prog.className = 'challenge-progress';
+              var cur = c.current || c.progress || 0;
+              var tgt = c.target || c.goal || '?';
+              prog.textContent = cur + '/' + tgt;
+            }
+            item.appendChild(name);
+            item.appendChild(prog);
+            list.appendChild(item);
+          });
+        })
+        .catch(function() {
+          var list = document.getElementById('challenges-list');
+          list.innerHTML = '';
+          var d = document.createElement('span');
+          d.className = 'empty';
+          d.textContent = 'Erro ao carregar desafios.';
+          list.appendChild(d);
+        });
+    }
+
+    function loadFidelidade() {
+      if (!_user || !_user.id) return;
+      fetch(API + '/api/fidelidade/' + _user.id + '/pontos')
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data) return;
+          document.getElementById('pontos-fidelidade').textContent = data.pontos || 0;
+        })
+        .catch(function() {});
+    }
+
+    function girarRoleta() {
+      var btn = document.getElementById('btn-roleta');
+      btn.disabled = true;
+      btn.textContent = 'Girando…';
+      fetch(API + '/api/gamification/spin', { method: 'POST', headers: authHeaders() })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          var result = document.getElementById('roleta-result');
+          result.classList.add('visible');
+          if (!res.ok) {
+            result.textContent = '❌ ' + (res.data.error || 'Erro ao girar roleta.');
+          } else {
+            result.textContent = '🎉 Recompensa: ' + (res.data.reward || res.data.result || JSON.stringify(res.data));
+          }
+        })
+        .catch(function(err) {
+          var result = document.getElementById('roleta-result');
+          result.classList.add('visible');
+          result.textContent = 'Erro de conexão: ' + err.message;
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = '🎰 Girar Roleta';
+        });
+    }
+
+    function resgatarPontos() {
+      if (!_user || !_user.id) return;
+      var btn = document.getElementById('btn-resgatar');
+      btn.disabled = true;
+      fetch(API + '/api/fidelidade/' + _user.id + '/resgatar', { method: 'POST', headers: authHeaders() })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+          var msg = document.getElementById('fidelidade-msg');
+          if (!res.ok) {
+            msg.textContent = res.data.error || 'Erro ao resgatar.';
+            msg.className = 'msg err';
+          } else {
+            msg.textContent = '🎁 ' + (res.data.message || 'Recompensa resgatada com sucesso!');
+            msg.className = 'msg ok';
+            loadFidelidade();
+          }
+        })
+        .catch(function(err) {
+          var msg = document.getElementById('fidelidade-msg');
+          msg.textContent = 'Erro de conexão: ' + err.message;
+          msg.className = 'msg err';
+        })
+        .finally(function() {
+          btn.disabled = false;
+        });
+    }
+
+    if (_token && _user) {
+      loadProfile();
+      loadXP();
+      loadBadges();
+      loadChallenges();
+      loadFidelidade();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
+  </script>
+</body>
+</html>

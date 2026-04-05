@@ -272,7 +272,9 @@
           }).join('');
         })
         .catch(function(e) {
-          document.getElementById('tbody-vendas').innerHTML = '<tr><td colspan="4" class="empty">Erro: ' + e.message + '</td></tr>';
+          var td = document.getElementById('tbody-vendas');
+          td.innerHTML = '<tr><td colspan="4" class="empty"></td></tr>';
+          td.querySelector('.empty').textContent = 'Erro: ' + e.message;
         });
     }
 
@@ -319,7 +321,9 @@
           }).join('');
         })
         .catch(function(e) {
-          document.getElementById('tbody-pedidos').innerHTML = '<tr><td colspan="8" class="empty">Erro: ' + e.message + '</td></tr>';
+          var td = document.getElementById('tbody-pedidos');
+          td.innerHTML = '<tr><td colspan="8" class="empty"></td></tr>';
+          td.querySelector('.empty').textContent = 'Erro: ' + e.message;
         });
     }
 

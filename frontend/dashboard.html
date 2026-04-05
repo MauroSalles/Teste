@@ -417,8 +417,9 @@
 
       } catch (err) {
         document.querySelectorAll('.card-value').forEach(el => el.textContent = '?');
-        document.getElementById('bar-chart').innerHTML =
-          `<div class="empty">Erro ao conectar ao servidor: ${err.message}</div>`;
+        const barChart = document.getElementById('bar-chart');
+        barChart.innerHTML = '<div class="empty"></div>';
+        barChart.querySelector('.empty').textContent = 'Erro ao conectar ao servidor: ' + err.message;
         document.getElementById('tbody-pedidos').innerHTML =
           '<tr><td colspan="4" class="empty">Não foi possível carregar os dados.</td></tr>';
       }

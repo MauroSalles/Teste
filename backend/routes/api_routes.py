@@ -1,5 +1,6 @@
 """REST API blueprint — /api/*"""
 
+import jwt as _jwt
 from flask import Blueprint, jsonify, request
 
 import backend.models.sabor as sabor_model
@@ -11,8 +12,22 @@ from backend.models.fidelidade import (
     adicionar_pontos,
     resgatar,
 )
+from backend.auth.jwt_handler import _SECRET_KEY as _JWT_SECRET, _ALGORITHM as _JWT_ALG
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+
+
+def _get_optional_user_id():
+    """Extract user_id from Bearer JWT if present and valid; return None otherwise."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth.split(" ", 1)[1]
+    try:
+        payload = _jwt.decode(token, _JWT_SECRET, algorithms=[_JWT_ALG])
+        return int(payload.get("sub"))
+    except Exception:
+        return None
 
 
 # ── Sabores ──────────────────────────────────────────────────────────────────
@@ -110,7 +125,8 @@ def criar_pedido():
 
     observacao = (data.get("observacao") or "").strip() or None
 
-    pedido = pedido_model.criar_pedido(sabor_id, quantidade, metodo, observacao)
+    user_id = _get_optional_user_id()
+    pedido = pedido_model.criar_pedido(sabor_id, quantidade, metodo, observacao, user_id=user_id)
     if not pedido:
         return jsonify({"error": "Sabor não encontrado"}), 404
     return jsonify(dict(pedido)), 201

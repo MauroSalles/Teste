@@ -8,12 +8,14 @@ from backend.routes.health_routes import health_bp
 from backend.routes.gamification_routes import gamification_bp
 from backend.routes.api_routes import api_bp
 from backend.routes.auth_routes import auth_bp
+from backend.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
 
 def create_app():
     app = Flask(__name__)
+    limiter.init_app(app)
 
     flask_env = os.environ.get("FLASK_ENV", "production")
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "")
